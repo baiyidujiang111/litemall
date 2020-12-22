@@ -3,8 +3,10 @@ package com.example.payment.controller;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.util.Common;
+import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import com.example.orderservice.OrderServiceDubbo;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
 import com.example.payment.model.bo.RefundBo;
@@ -12,6 +14,7 @@ import com.example.payment.model.vo.PaymentInfoVo;
 import com.example.payment.service.PaymentService;
 import com.example.payment.service.RefundService;
 import io.swagger.annotations.*;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +25,8 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/payment/aftersales",produces = "application/json;charset=UTF-8")
 public class PaymentAftersaleController {
+
+
 
 
     @Autowired
@@ -84,7 +89,6 @@ public class PaymentAftersaleController {
         /*先校验一下该aftersaleId是不是本用户自己的*/
 
         /* 若正常，接着处理 */
-
         /*得到refund*/
         ReturnObject returnObject = refundService.getRefundsByAftersaleId(aftersaleId);
         if(returnObject.getCode()==ResponseCode.OK)
