@@ -7,7 +7,9 @@ import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
+import com.example.payment.model.bo.PaymentBo;
 import com.example.payment.model.vo.AmountVo;
+import com.example.payment.model.vo.PaymentInfoVo;
 import com.example.payment.service.PaymentService;
 import com.example.payment.service.RefundService;
 import io.swagger.annotations.*;
@@ -90,13 +92,20 @@ public class PaymentOrderByShopController {
     @Audit
     @GetMapping("{shopId}/aftersales/{id}/payments")
     public Object getPaymentsByAftersaleIdAndShopId(@PathVariable("shopId")long shopId,
-                                                    @PathVariable("id")long aftersaleId)
-    {
+                                                    @PathVariable("id")long aftersaleId) {
         /* 先根据aftersalfeId查出shopId */
         /* 与传入的shopId一致才可放行 */
-        ReturnObject returnObject = new ReturnObject(paymentService.getPaymentsByAftersaleId(aftersaleId));
-        if(returnObject.getCode() == ResponseCode.OK)
+
+        ReturnObject returnObject = paymentService.getPaymentsByAftersaleId(aftersaleId);
+        logger.info(JacksonUtil.toJson(returnObject));
+        if (returnObject.getCode() == ResponseCode.OK)
+        {
+            PaymentBo paymentBo = (PaymentBo)returnObject.getData();
+            Long orderId = paymentBo.getOrderId();
+            //根据orderId查出shopid
+            //todo:检查shop和路径上的shop
             return Common.getRetObject(returnObject);
+        }
         else
         {
             return Common.decorateReturnObject(returnObject);
