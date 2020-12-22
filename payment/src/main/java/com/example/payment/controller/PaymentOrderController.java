@@ -29,7 +29,7 @@ public class PaymentOrderController {
     private static final Logger logger = LoggerFactory.getLogger(PaymentOrderController.class);
 
 
-    @DubboReference
+    @DubboReference(registry = "order")
     OrderServiceDubbo orderServiceDubbo;
 
     @Autowired

@@ -6,6 +6,7 @@ import cn.edu.xmu.ooad.util.Common;
 import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.oomall.other.service.IAftersaleService;
 import com.example.orderservice.OrderServiceDubbo;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
@@ -35,6 +36,9 @@ public class PaymentAftersaleController {
     PaymentService paymentService;
     @Autowired
     HttpServletResponse httpServletResponse;
+
+    @DubboReference(registry = "other")
+    IAftersaleService iAftersaleService;
 
     @PostMapping("{id}/payments")
     @Audit
@@ -87,6 +91,18 @@ public class PaymentAftersaleController {
     public Object getRefundByAftersaleId(@PathVariable("id") long aftersaleId,@LoginUser Long userId)
     {
         /*先校验一下该aftersaleId是不是本用户自己的*/
+        Long checkId = iAftersaleService.findUserIdbyAftersaleId(aftersaleId).getData();
+        if(checkId==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
+        if(!userId.equals(checkId))
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            return Common.decorateReturnObject(returnObject);
+        }
+
 
         /* 若正常，接着处理 */
         /*得到refund*/
