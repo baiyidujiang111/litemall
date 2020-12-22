@@ -34,7 +34,7 @@ public class OrderListBo implements VoObject {
         orderListModel.setPageSize(pageSize);
         orderListModel.setTotal(total);
         orderListModel.setPages(pages);
-        orderListModel.setOrderListModelItems(orderListModelItems);
+        orderListModel.setList(orderListModelItems);
         return orderListModel;
     }
 

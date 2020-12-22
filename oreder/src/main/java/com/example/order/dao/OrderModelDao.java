@@ -48,30 +48,22 @@ public class OrderModelDao {
     * @Author: yansong chen
     * @Date: 2020-12-13 1:21
     */
-    public ReturnObject GetOrderStatus(Long id)
+    public ReturnObject GetOrderStatus()
     {
         ReturnObject returnObject;
-        OrdersExample example=new OrdersExample();
-        OrdersExample.Criteria criteria=example.createCriteria();
-
-        criteria.andCustomerIdEqualTo(id);
-        List<Orders> list=ordersMapper.selectByExample(example);
-        logger.debug("customer_id:"+id+" ordernum:"+list.size());
-
-        if(list==null)
-        {
-            returnObject=new ReturnObject();
-        }
-        else
-        {
-            List<OrderBo> list1 = null;
-            for(Orders l:list)
-            {
-                OrderBo orderBo=new OrderBo(l);
-                list1.add(orderBo);
-            }
-            returnObject=new ReturnObject(list1);
-        }
+        List<OrderStatesList> statesList=new ArrayList<>();
+        statesList.add(new OrderStatesList(1,"待付款"));
+        statesList.add(new OrderStatesList(2,"待收货"));
+        statesList.add(new OrderStatesList(3 ,"已完成"));
+        statesList.add(new OrderStatesList(4,"已取消"));
+        statesList.add(new OrderStatesList(11,"新订单"));
+        statesList.add(new OrderStatesList(12,"待支付尾款"));
+        statesList.add(new OrderStatesList(21,"付款完成"));
+        statesList.add(new OrderStatesList(22,"待成团"));
+        statesList.add(new OrderStatesList(23,"未成团"));
+        statesList.add(new OrderStatesList(24,"已发货"));
+        logger.info("getorderstates");
+        returnObject=new ReturnObject<>(statesList);
         return returnObject;
     }
 
@@ -421,15 +413,17 @@ public class OrderModelDao {
         return returnObject;
     }
 
-    public ReturnObject GetShopOrderList(Long authorization, int shopId,
+    public ReturnObject GetShopOrderList(Long authorization, Long shopId,
                                          String orderSn,String beginTime,String endTime,
                                          int page,int pageSize)
     {
+        //关于订单id到底是orderSn还是id
         ReturnObject returnObject;
         OrdersExample ordersExample=new OrdersExample();
 
         OrdersExample.Criteria criteria=ordersExample.createCriteria();
         criteria.andIdEqualTo(authorization);
+        criteria.andShopIdEqualTo(shopId);
         List<Orders> list;
         list= ordersMapper.selectByExample(ordersExample);
         OrderDetail orderDetail = null;
@@ -445,12 +439,12 @@ public class OrderModelDao {
             //如果指定sn
             if(orderSn.length()>0)
             {
-                for(Orders orders:list)
-                {
-                    if (orders.getOrderSn().equals(orderSn))
+                Iterator<Orders> iterator1 = list.iterator();
+                while(iterator1.hasNext()){
+                    Orders orders = iterator1.next();
+                    if (!orders.getOrderSn().equals(orderSn))
                     {
-                        list.clear();
-                        list.add(orders);
+                        iterator1.remove();
                     }
                 }
             }
@@ -461,13 +455,15 @@ public class OrderModelDao {
             Duration duration1;
             Duration duration2;
             Duration duration_begin_end=Duration.between(begin,end);
-            for(Orders orders:list)
-            {
+
+            Iterator<Orders> iterator1 = list.iterator();
+            while(iterator1.hasNext()) {
+                Orders orders = iterator1.next();
                 duration1=Duration.between(begin,orders.getGmtCreate());
                 duration2=Duration.between(orders.getGmtCreate(),end);
                 if(!(duration_begin_end.toMinutes()>duration1.toMinutes()&&duration_begin_end.toMinutes()>duration2.toMinutes()))
                 {
-                    list.remove(orders);
+                    iterator1.remove();
                 }
             }
             //计算总页面和总数
@@ -508,7 +504,7 @@ public class OrderModelDao {
         }
     }
 
-    public ReturnObject PutOrderMessage(int shopid, int id, OrderMessage message)
+    public ReturnObject PutOrderMessage(Long shopid, Long id, OrderMessage message)
     {
         ReturnObject returnObject;
         OrdersExample example=new OrdersExample();
@@ -519,9 +515,10 @@ public class OrderModelDao {
         for(Orders orders:list)
         {
             orders.setMessage(message.getMessage());
-            ordersMapper.updateByPrimaryKeySelective(orders);
+            int i=ordersMapper.updateByPrimaryKeySelective(orders);
+            System.out.println(message.getMessage()+"   "+i);
         }
-        returnObject=new ReturnObject();
+        returnObject=new ReturnObject<>(ResponseCode.OK);
         return returnObject;
     }
 
@@ -565,7 +562,7 @@ public class OrderModelDao {
         return returnObject;
     }
 
-    public ReturnObject DelShopOrder(int shopId,int id)
+    public ReturnObject DelShopOrder(Long shopId,Long id)
     {
         ReturnObject returnObject = null;
         OrdersExample example=new OrdersExample();
@@ -599,23 +596,34 @@ public class OrderModelDao {
         return returnObject;
     }
 
-    public ReturnObject putDeliver(int shopId, int id, OrderFreightSn orderFreightSn)
+    public ReturnObject putDeliver(Long shopId, Long id, OrderFreightSn orderFreightSn)
     {
-        ReturnObject returnObject;
+        ReturnObject returnObject = null;
         OrdersExample example=new OrdersExample();
         OrdersExample.Criteria criteria=example.createCriteria();
-        criteria.andOrderSnEqualTo(String.valueOf(id));
+        criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
 
         for (Orders orders:list)
         {
-            //将订单状态设置为待收货
-            orders.setState((byte)2);
-            //运单信息
-            orders.setShipmentSn(orderFreightSn.getFreightSn());
-            ordersMapper.updateByPrimaryKeySelective(orders);
+            if(orders.getState().equals(2)||orders.getState().equals(21))
+            {
+                //将订单状态设置为已发货
+                orders.setState((byte)24);
+                //运单信息
+                orders.setShipmentSn(orderFreightSn.getFreightSn());
+                int i=ordersMapper.updateByPrimaryKeySelective(orders);
+                logger.info("orderSN:"+orders.getOrderSn()+"  "+i);
+                System.out.println("orderSN:"+orders.getOrderSn());
+                returnObject=new ReturnObject<>(ResponseCode.OK);
+            }
+            else
+            {
+                logger.info("orderSN:"+orders.getOrderSn());
+                returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+            }
         }
-        returnObject=new ReturnObject();
+
         return returnObject;
     }
 

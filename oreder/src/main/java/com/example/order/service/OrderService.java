@@ -29,10 +29,10 @@ public class OrderService {
     * @Author: yansong chen
     * @Date: 2020-12-13 1:20
     */
-    @Transactional
-    public ReturnObject GetOrderStatus(Long username)
+    @Transactional(rollbackFor = Exception.class)
+    public ReturnObject GetOrderStatus()
     {
-        return orderModeldao.GetOrderStatus(username);
+        return orderModeldao.GetOrderStatus();
     }
 
 
@@ -75,7 +75,7 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject GetShopOrderList(Long authorization, int shopId,
+    public ReturnObject GetShopOrderList(Long authorization, Long shopId,
                                          String orderSn,String beginTime,String endTime,
                                          int page,int pageSize)
     {
@@ -83,7 +83,7 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject PutOrderMessage(int shopid, int id, OrderMessage message)
+    public ReturnObject PutOrderMessage(Long shopid, Long id, OrderMessage message)
     {
         return orderModeldao.PutOrderMessage(shopid,id,message);
     }
@@ -95,13 +95,13 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject DelShopOrder(int shopId,int id)
+    public ReturnObject DelShopOrder(Long shopId,Long id)
     {
         return orderModeldao.DelShopOrder(shopId,id);
     }
 
     @Transactional
-    public ReturnObject putDeliver(int shopId, int id, OrderFreightSn orderFreightSn)
+    public ReturnObject putDeliver(Long shopId, Long id, OrderFreightSn orderFreightSn)
     {
         return  orderModeldao.putDeliver(shopId,id,orderFreightSn);
     }
