@@ -466,6 +466,7 @@ public class publicPaymentControllerTest
     }
 
     /**
+     * todo:需要售后
      * 查找售后(id=54)的支付信息, 操作资源id不属于操作者
      * @throws Exception
      */
@@ -522,6 +523,7 @@ public class publicPaymentControllerTest
     }
 
     /**
+     * todo:需要网关
      * 店家获取店内订单的支付单 (无权限)
      * @throws Exception
      */
@@ -648,6 +650,7 @@ public class publicPaymentControllerTest
 
 
     /**
+     * post尚未完成
      * 买家为订单支付 (订单状态禁止)
      * @throws Exception
      */

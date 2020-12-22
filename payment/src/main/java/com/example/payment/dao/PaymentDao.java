@@ -49,16 +49,23 @@ public class PaymentDao {
     }
     public ReturnObject getPaymentsByAftersaleId(long aftersaleId)
     {
+        ReturnObject returnObject;
         PaymentPoExample paymentExample=new PaymentPoExample();
         PaymentPoExample.Criteria criteria=paymentExample.createCriteria();
         criteria.andAftersaleIdEqualTo(aftersaleId);
         List<PaymentPo> paymentPos = paymentPoMapper.selectByExample(paymentExample);
         List<PaymentBo> paymentBos = new ArrayList<>(paymentPos.size());
-        for(PaymentPo paymentPo:paymentPos)
+        if(paymentPos.isEmpty())
         {
-            paymentBos.add(new PaymentBo(paymentPo));
+            returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }else{
+
+            for(PaymentPo paymentPo:paymentPos)
+            {
+                paymentBos.add(new PaymentBo(paymentPo));
+            }
+            returnObject = new ReturnObject(paymentBos);
         }
-        ReturnObject returnObject = new ReturnObject(paymentBos);
         return returnObject;
     }
 
