@@ -147,7 +147,7 @@ public class Ordercontroller {
     @Audit
     @GetMapping("/orders/{id}")
     @ResponseBody
-    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") int id)
+    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") Long id)
     {
         logger.debug("User_id:"+authorization+" Order_id:"+id);
         ReturnObject returnObject=orderService.GetOrderDetail(authorization,id);
@@ -192,7 +192,7 @@ public class Ordercontroller {
     })
     @Audit
     @PutMapping("/orders/{id}/confirm")
-    public Object putOrderIdConfirm(@LoginUser Long authorization,@PathVariable int id)
+    public Object putOrderIdConfirm(@LoginUser Long authorization,@PathVariable Long id)
     {
         ReturnObject returnObject=orderService.putOrderIdConfirm(id);
 
@@ -215,7 +215,7 @@ public class Ordercontroller {
     })
     @Audit
     @DeleteMapping("/orders/{id}")
-    public Object DelOrder(@LoginUser Long authorization,@PathVariable int id)
+    public Object DelOrder(@LoginUser Long authorization,@PathVariable Long id)
     {
         ReturnObject returnObject=orderService.DelOrder(authorization,id);
 
@@ -256,8 +256,8 @@ public class Ordercontroller {
             @ApiImplicitParam(paramType = "query",dataType = "String",name = "orderSn",value = "按订单Sn查询"),
             @ApiImplicitParam(paramType = "query",dataType = "String",name = "beginTime",value = "开始时间"),
             @ApiImplicitParam(paramType = "query",dataType = "String",name = "endTime",value = "结束时间"),
-            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "page",value = "页码",defaultValue = "1"),
-            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "pageSize",value = "页码大小",defaultValue = "10"),
+            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "page",value = "页码"),
+            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "pageSize",value = "页码大小"),
     })
     @ApiResponses({
             @ApiResponse(code=0,message = "成功")
@@ -272,7 +272,7 @@ public class Ordercontroller {
                                    @RequestParam(required = false,defaultValue = "10")int pageSize)
     {
         ReturnObject returnObject=orderService.GetShopOrderList(authorization,shopId,orderSn,beginTime,endTime,page,pageSize);
-
+        logger.info("get shop detail "+returnObject.getCode());
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
         } else {
@@ -318,9 +318,10 @@ public class Ordercontroller {
     })
     @Audit
     @GetMapping("/shops/{shopId}/orders/{id}")
+    @ResponseBody
     public Object GetShopOrderDetail(@LoginUser Long authorization,
-                                     @PathVariable int shopId,
-                                     @PathVariable int id)
+                                     @PathVariable Long shopId,
+                                     @PathVariable Long id)
     {
         ReturnObject returnObject=orderService.GetShopOrderDetail(authorization,shopId,id);
 
@@ -373,7 +374,7 @@ public class Ordercontroller {
                              @PathVariable("id") Long id,
                              @RequestBody OrderFreightSn orderFreightSn)
     {
-        logger.info("putDeliver shopId:" + shopId + " id = " + id);
+        logger.info("putDeliver shopId:" + shopId + " id = " + id+"  SN:"+orderFreightSn.getFreightSn());
         ReturnObject returnObject=orderService.putDeliver(shopId,id,orderFreightSn);
 
         if (returnObject.getCode() == ResponseCode.OK) {

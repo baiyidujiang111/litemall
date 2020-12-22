@@ -7,6 +7,7 @@ import com.example.order.model.vo.OrderDetail;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /***
@@ -46,7 +47,7 @@ public class NewOrder implements VoObject {
     private LocalDateTime gmtModified;
     private Long grouponId;
 
-    private List<NewOrderItem> list;
+    private List<NewOrderItem> list=new ArrayList<>();
 
     @Override
     public Object createVo() {
