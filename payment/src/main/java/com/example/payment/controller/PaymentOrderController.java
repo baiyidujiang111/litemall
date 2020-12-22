@@ -3,6 +3,7 @@ package com.example.payment.controller;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.util.Common;
+import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
@@ -13,6 +14,7 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,8 @@ public class PaymentOrderController {
     @Autowired
     RefundService refundService;
 
+    @Autowired
+    HttpServletResponse httpServletResponse;
 
     /**
     * @Description:  用户创建支付单，todo:暂无思路
@@ -94,7 +98,12 @@ public class PaymentOrderController {
 
         /* 若正常，接着处理 */
         ReturnObject returnObject = refundService.getRefundsByOrderId(orderId);
-        return Common.getListRetObject(returnObject);
+        if(returnObject.getCode()!= ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            return Common.getListRetObject(returnObject);
+        }
+        httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        return Common.getNullRetObj(returnObject,httpServletResponse);
     }
 
 
