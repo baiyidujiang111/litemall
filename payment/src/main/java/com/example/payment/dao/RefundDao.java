@@ -1,7 +1,9 @@
 package com.example.payment.dao;
 
+import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import com.example.payment.controller.PaymentOrderByShopController;
 import com.example.payment.mapper.PaymentPoMapper;
 import com.example.payment.mapper.RefundPoMapper;
 import com.example.payment.model.bo.RefundBo;
@@ -9,6 +11,8 @@ import com.example.payment.model.po.RefundPo;
 import com.example.payment.model.po.RefundPoExample;
 import com.example.payment.model.vo.AmountVo;
 import com.example.payment.model.vo.PaymentInfoVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -21,6 +25,10 @@ public class RefundDao {
     RefundPoMapper refundPoMapper;
     @Autowired
     PaymentPoMapper paymentPoMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(RefundDao.class);
+
+
     public List<RefundPo> getRefundsByPaymentId(long paymentId)
     {
         RefundPoExample refundExample=new RefundPoExample();
@@ -56,10 +64,13 @@ public class RefundDao {
      */
     public ReturnObject getRefundsByOrderId(Long orderId)
     {
+        logger.info("in get refunds dao");
         RefundPoExample refundPoExample = new RefundPoExample();
         RefundPoExample.Criteria criteria = refundPoExample.createCriteria();
         criteria.andOrderIdEqualTo(orderId);
         List<RefundPo> refundPos = refundPoMapper.selectByExample(refundPoExample);
+        logger.info(JacksonUtil.toJson(refundPos));
+        logger.info("after select");
         List<RefundBo> refundBos = new ArrayList<>(refundPos.size());
         for(RefundPo refundPo:refundPos)
         {
@@ -74,6 +85,7 @@ public class RefundDao {
         {
             returnObject=new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
+        logger.info("returnObject "+returnObject.getErrmsg()+" "+returnObject.getCode());
         return returnObject;
     }
 
