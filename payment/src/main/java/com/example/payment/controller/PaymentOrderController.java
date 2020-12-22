@@ -80,7 +80,12 @@ public class PaymentOrderController {
 
         /* 若正常，接着处理 */
         ReturnObject returnObject = paymentService.getPaymentsByOrderId(id);
-        return Common.getListRetObject(returnObject);
+        if(returnObject.getCode()==ResponseCode.OK)
+        {
+            return Common.getListRetObject(returnObject);
+        }else{
+            return Common.decorateReturnObject(returnObject);
+        }
     }
 
     /**

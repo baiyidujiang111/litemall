@@ -12,9 +12,7 @@
         <!--数据库链接URL，用户名、密码
            1.一般jdbc数据库的版本6.x以上，都是com.mysql.cj.jdbc.Driver  其他的低版本就是com.mysql.cj.jdbc.Driver
          -->
-        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://127.0.0.1:3306/oomall_order?serverTimezone=GMT" userId="root" password="alex20000211">
-        <property name="nullCatalogMeansCurrent" value="true"/>
-        </jdbcConnection>
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver" connectionURL="jdbc:mysql://127.0.0.1:3306/ordermodule?serverTimezone=GMT" userId="root" password="46210707067asdf"/>
 
         <javaTypeResolver>
             <property name="forceBigDecimals" value="false"/>
@@ -41,6 +39,7 @@
                enableDeleteByExample="true" enableSelectByExample="true"
                selectByExampleQueryId="true">
         </table>
+
         <table tableName="refund" domainObjectName="RefundPo"
                enableCountByExample="true" enableUpdateByExample="false"
                enableDeleteByExample="true" enableSelectByExample="true"

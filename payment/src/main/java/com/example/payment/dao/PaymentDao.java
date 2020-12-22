@@ -1,5 +1,7 @@
 package com.example.payment.dao;
 
+import cn.edu.xmu.ooad.util.JacksonUtil;
+import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.mapper.PaymentPoMapper;
 import com.example.payment.model.bo.PaymentBo;
@@ -26,16 +28,23 @@ public class PaymentDao {
 
     public ReturnObject getPaymentsByOrderId(long orderId)
     {
+        ReturnObject returnObject;
         PaymentPoExample paymentExample=new PaymentPoExample();
         PaymentPoExample.Criteria criteria=paymentExample.createCriteria();
         criteria.andOrderIdEqualTo(orderId);
         List<PaymentPo> paymentPos = paymentPoMapper.selectByExample(paymentExample);
         List<PaymentBo> paymentBos = new ArrayList<>(paymentPos.size());
-        for(PaymentPo paymentPo:paymentPos)
+        if(paymentPos.isEmpty())
         {
-            paymentBos.add(new PaymentBo(paymentPo));
+            returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }else {
+            for(PaymentPo paymentPo:paymentPos)
+            {
+                paymentBos.add(new PaymentBo(paymentPo));
+            }
+            returnObject= new ReturnObject(paymentBos);
         }
-        ReturnObject returnObject = new ReturnObject(paymentBos);
+
         return returnObject;
     }
     public ReturnObject getPaymentsByAftersaleId(long aftersaleId)
@@ -57,12 +66,10 @@ public class PaymentDao {
     {
         ReturnObject returnObject = null;
         /* 手写SQL查询订单状态 */
-        List<Byte> states = paymentPoMapper.getAllState();
-        List<StateRetVo> stateRetVos = new ArrayList<>(states.size());
-        for(Byte code:states)
-        {
-            stateRetVos.add(new StateRetVo(code));
-        }
+        List<StateRetVo> stateRetVos = new ArrayList<>(3);
+        stateRetVos.add(new StateRetVo(Byte.valueOf("0")));
+        stateRetVos.add(new StateRetVo(Byte.valueOf("1")));
+        stateRetVos.add(new StateRetVo(Byte.valueOf("2")));
         returnObject = new ReturnObject(stateRetVos);
         return returnObject;
     }
@@ -72,7 +79,7 @@ public class PaymentDao {
         List<PayPatternAndNameRetVo> payPatternAndNameRetVos = new ArrayList<>(2);
         /* 目前只返回两种订单状态 */
         payPatternAndNameRetVos.add(new PayPatternAndNameRetVo("返点支付","001"));
-        payPatternAndNameRetVos.add(new PayPatternAndNameRetVo("模拟支付","002"));
+        payPatternAndNameRetVos.add(new PayPatternAndNameRetVo("模拟支付渠道","002"));
         return new ReturnObject(payPatternAndNameRetVos);
     }
 

@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    #initialization-mode: always
+    name: oomall_order
+    url: jdbc:mysql://localhost:3306/oomall_order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    username: root
+    password: alex20000211
+    #schema: classpath:order-schema.sql
+    #data: classpath:order-data.sql
+    druid:
+      #初始化时建立物理连接的个数
+      initial-size: 3
+      #最小连接池数量
+      min-idle: 3
+      #最大连接池数量
+      max-active: 100
+      #获取连接时最大等待时间
+      max-wait: 60000
+      filter:
+        stat:
+          #是否开启慢sql查询监控
+          log-slow-sql: true
+          #慢SQL执行时间
+          slow-sql-millis: 100
+      validation-query: select 1
+    sql-script-encoding: UTF-8
+
+public-test:
+  managementgate: localhost:8081
+  mallgate: localhost:8081
+server:
+  port: 8081

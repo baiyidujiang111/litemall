@@ -2,6 +2,9 @@ package com.example.payment.controller;
 
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.LoginUser;
+import cn.edu.xmu.ooad.util.Common;
+import cn.edu.xmu.ooad.util.JacksonUtil;
+import cn.edu.xmu.ooad.util.ResponseUtil;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.model.vo.PayPatternAndNameRetVo;
@@ -40,12 +43,14 @@ public class PaymentController {
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功"),
     })
-    @Audit
+
     @GetMapping("states")
     public Object getAllPaymentState()
     {
+        logger.info("in getPaymentState");
         logger.debug("get all paymentState");
-        return paymentService.getAllPaymentState();
+        ReturnObject returnObject  = paymentService.getAllPaymentState();
+        return Common.getListRetObject(returnObject);
 
     }
 
@@ -64,10 +69,9 @@ public class PaymentController {
     * @Author: alex101
     * @Date: 2020/12/16 
     */
-    @Audit
     @GetMapping("patterns")
     public Object getAllPatterns() {
-        logger.debug("get all paymentPatterns");
-        return paymentService.getAllPaymentPatterns();
+        ReturnObject returnObject = paymentService.getAllPaymentPatterns();
+        return Common.getListRetObject(returnObject);
     }
 }
