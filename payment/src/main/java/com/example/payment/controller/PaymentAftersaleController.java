@@ -7,6 +7,7 @@ import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
+import com.example.payment.model.bo.RefundBo;
 import com.example.payment.model.vo.PaymentInfoVo;
 import com.example.payment.service.PaymentService;
 import com.example.payment.service.RefundService;
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/payment/aftersales",produces = "application/json;charset=UTF-8")
 public class PaymentAftersaleController {
+
 
     @Autowired
     RefundService refundService;
@@ -51,7 +53,7 @@ public class PaymentAftersaleController {
     @ApiResponses({
             @ApiResponse(code = 0, message = "成功"),
     })
-    @GetMapping("{id}/payment")
+    @GetMapping("{id}/payments")
     @Audit
     public Object getAftersaleByAftersaleId(@PathVariable("id")Long aftersaleId)
     {
@@ -74,35 +76,18 @@ public class PaymentAftersaleController {
     @Audit
     public Object getRefundByAftersaleId(@PathVariable("id") long aftersaleId,@LoginUser Long userId)
     {
-        System.out.println("ssssss");
         /*先校验一下该aftersaleId是不是本用户自己的*/
 
         /* 若正常，接着处理 */
 
-        System.out.println("ccccc");
+        /*得到refund*/
         ReturnObject returnObject = refundService.getRefundsByAftersaleId(aftersaleId);
-        System.out.println(returnObject.getCode());
-        System.out.println("ad"+(returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST));
-        if(returnObject.getCode()!=ResponseCode.RESOURCE_ID_NOTEXIST)
+        if(returnObject.getCode()==ResponseCode.OK)
         {
-            System.out.println("dddddd");
-            System.out.println("为空吗1"+(returnObject.getData()==null));
-            System.out.println("为空吗2"+(returnObject.getData()==""));
-            System.out.println("为空吗2"+(returnObject.getData()));
             return Common.getListRetObject(returnObject);
+        }else {
+            return Common.decorateReturnObject(returnObject);
         }
-
-
-        httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        System.out.println(returnObject);
-        System.out.println("到这一步");
-        return Common.getNullRetObj(returnObject, httpServletResponse);
-        //return Common.getListRetObject(returnObject);
-//        else
-//        {
-//            return  Common.getNullRetObj(new ReturnObject<>(ResponseCode.FIELD_NOTVALID, String.format("部门id不匹配：" + did)), httpServletResponse);
-//        }
-
     }
 
 //    @GetMapping("{id}/payments")

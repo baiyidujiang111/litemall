@@ -2,10 +2,9 @@ package com.example.payment.mapper;
 
 import com.example.payment.model.po.RefundPo;
 import com.example.payment.model.po.RefundPoExample;
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 @Component
 public interface RefundPoMapper {
     int countByExample(RefundPoExample example);
@@ -21,10 +20,6 @@ public interface RefundPoMapper {
     List<RefundPo> selectByExample(RefundPoExample example);
 
     RefundPo selectByPrimaryKey(Long id);
-
-    int updateByExampleSelective(@Param("record") RefundPo record, @Param("example") RefundPoExample example);
-
-    int updateByExample(@Param("record") RefundPo record, @Param("example") RefundPoExample example);
 
     int updateByPrimaryKeySelective(RefundPo record);
 

@@ -2,6 +2,7 @@ package com.example.payment.controller;
 
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.util.Common;
+import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.dao.PaymentDao;
@@ -10,6 +11,8 @@ import com.example.payment.model.vo.AmountVo;
 import com.example.payment.service.PaymentService;
 import com.example.payment.service.RefundService;
 import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +32,10 @@ public class PaymentOrderByShopController {
     @Autowired
     HttpServletResponse httpServletResponse;
 
-    
+    private static final Logger logger = LoggerFactory.getLogger(PaymentOrderByShopController.class);
+
     /** 
-    * @Description: 管理员查询订单的支付信息，todo:缺少dubbo远程调用
+    * @Description: 管理员查询订单的支付信息，todo:缺少dubbo远程调用，调用order
     * @Param: [shopId, orderId] 
     * @return: java.lang.Object 
     * @Author: alex101
@@ -125,11 +129,15 @@ public class PaymentOrderByShopController {
     @GetMapping("{shopId}/orders/{id}/refunds")
     public Object getRefundsByOrderIdAndShopId(@PathVariable("shopId") Long shopId, @PathVariable("id") Long orderId)
     {
+        logger.info("in get getRefundsByOrderIdAndShopId shopId: "+shopId +" order ID "+orderId);
         /* 先根据orderId查出shopId */
         /* 与传入的shopId一致才可放行 */
-        ReturnObject returnObject = new ReturnObject(refundService.getRefundsByOrderId(orderId));
+        ReturnObject returnObject = refundService.getRefundsByOrderId(orderId);
         if(returnObject.getCode() == ResponseCode.OK)
-            return Common.getRetObject(returnObject);
+        {
+            logger.info(JacksonUtil.toJson(returnObject));
+            return Common.getListRetObject(returnObject);
+        }
         else
         {
             return Common.decorateReturnObject(returnObject);
@@ -143,69 +151,53 @@ public class PaymentOrderByShopController {
      * @Author: lzn
      * @Date 2020/12/17
      */
+    @Audit
     @GetMapping("{shopId}/aftersales/{id}/refunds")
     public Object getRefundsByAftersaleIdAndShopId(@PathVariable("shopId") Long shopId, @PathVariable("id") Long aftersaleId)
     {
         /* 先根据aftersaleId查出shopId */
         /* 与传入的shopId一致才可放行 */
-        //ReturnObject returnObject = refundService.getRefundsByAftersaleId(aftersaleId);
-//        if(returnObject.getCode() == ResponseCode.OK)
-//        {
-//            System.out.println("ok");
-//            return Common.getListRetObject(returnObject);
-//        }
-
-
-//        if(returnObject.getCode()!=ResponseCode.RESOURCE_ID_NOTEXIST)
-//        {
-//
-//            return Common.getListRetObject(returnObject);
-//        }
-//
-//        else
-//        {
-//            System.out.println("fail");
-//            return Common.decorateReturnObject(returnObject);
-//        }
-        System.out.println("ccccc");
         ReturnObject returnObject = refundService.getRefundsByAftersaleId(aftersaleId);
-        System.out.println(returnObject.getCode());
-        System.out.println("ad"+(returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST));
-        if(returnObject.getCode()!=ResponseCode.RESOURCE_ID_NOTEXIST)
+        if(returnObject.getCode() == ResponseCode.OK)
         {
-            System.out.println("dddddd");
-            System.out.println("为空吗1"+(returnObject.getData()==null));
-            System.out.println("为空吗2"+(returnObject.getData()==""));
-            System.out.println("为空吗2"+(returnObject.getData()));
+            System.out.println("ok");
             return Common.getListRetObject(returnObject);
         }
 
+        if(returnObject.getCode()!=ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
 
-        httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        System.out.println(returnObject);
-        System.out.println("到这一步");
-        return Common.getNullRetObj(returnObject, httpServletResponse);
+            return Common.getListRetObject(returnObject);
+        }
+
+        else
+        {
+            System.out.println("fail");
+            logger.info(JacksonUtil.toJson(returnObject));
+            return Common.decorateReturnObject(returnObject);
+        }
     }
 
 
-//    @GetMapping("{shopId}/orders/{id}/refund")
+    /** 
+    * @Description: todo:缺少dubbo 
+    * @Param: [shopId, orderId] 
+    * @return: java.lang.Object 
+    * @Author: alex101
+    * @Date: 2020/12/22 
+    */
+//    @GetMapping("{shopId}/orders/{id}/refunds")
 //    //比如要找id为9的订单的退款信息，这个订单的shopid是2，那么只有当访问路径中的shopid为2的时候才能访问，否则会提示无权访问
 //    public Object getRefundsByOrderIdAndShopId(@PathVariable("shopId") long shopId,
 //                                               @PathVariable("id") long orderId)
 //    {
-//        Orders order=ordersDao.getOrderById(orderId);
-//        if(order.getShopId()!=shopId)
+//        ReturnObject returnObject  = refundService.getRefundsByOrderId(orderId);
+//        if(returnObject.getCode()==ResponseCode.OK)
 //        {
-//            return ResponseUtil.fail(ResponseCode.RESOURCE_ID_OUTSCOPE);
+//            return Common.getListRetObject(returnObject);
+//        }else {
+//            return Common.decorateReturnObject(returnObject);
 //        }
-//        List<Payment> paymentList=paymentDao.getPaymentsByOrderId(orderId);
-//        List<Refund> refundList=new ArrayList<>();
-//        for(Payment p:paymentList)
-//        {
-//            List<Refund> temp=refundDao.getRefundsByPaymentId(p.getId());
-//            refundList.addAll(temp);
-//        }
-//        return ResponseUtil.ok(refundList);
 //    }
 //
 //

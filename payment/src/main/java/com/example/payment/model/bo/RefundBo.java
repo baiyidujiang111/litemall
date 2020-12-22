@@ -2,7 +2,6 @@ package com.example.payment.model.bo;
 
 import cn.edu.xmu.ooad.model.VoObject;
 import com.example.payment.model.po.RefundPo;
-import com.example.payment.model.vo.PaymentRetVo;
 import com.example.payment.model.vo.RefundRetVo;
 import lombok.Data;
 
