@@ -55,6 +55,7 @@ public class PaymentDao {
         criteria.andAftersaleIdEqualTo(aftersaleId);
         List<PaymentPo> paymentPos = paymentPoMapper.selectByExample(paymentExample);
         List<PaymentBo> paymentBos = new ArrayList<>(paymentPos.size());
+        System.out.println(paymentPos.size());;
         if(paymentPos.isEmpty())
         {
             returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
@@ -139,4 +140,5 @@ public class PaymentDao {
         ReturnObject returnObject = null;
         return returnObject;
     }
+
 }
