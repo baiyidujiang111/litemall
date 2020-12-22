@@ -60,7 +60,12 @@ public class PaymentAftersaleController {
         /*先校验一下该aftersaleId是不是本用户自己的*/
         /* 若正常，接着处理 */
         ReturnObject returnObject = paymentService.getPaymentsByAftersaleId(aftersaleId);
-        return Common.getListRetObject(returnObject);
+        if(returnObject.getCode()==ResponseCode.OK)
+        {
+            return Common.getListRetObject(returnObject);
+        }else {
+            return Common.decorateReturnObject(returnObject);
+        }
     }
 
 

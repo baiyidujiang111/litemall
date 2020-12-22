@@ -59,8 +59,13 @@ public class PaymentOrderByShopController {
     {
         /* 先根据orderId查出shopId */
         /* 与传入的shopId一致才可放行 */
-        ReturnObject returnObject = new ReturnObject(paymentService.getPaymentsByOrderId(orderId));
-        return Common.getRetObject(returnObject);
+        ReturnObject returnObject = paymentService.getPaymentsByOrderId(orderId);
+        if(returnObject.getCode()==ResponseCode.OK)
+        {
+            return Common.getListRetObject(returnObject);
+        }else {
+            return Common.decorateReturnObject(returnObject);
+        }
     }
 
 
