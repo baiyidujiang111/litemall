@@ -256,8 +256,8 @@ public class Ordercontroller {
             @ApiImplicitParam(paramType = "query",dataType = "String",name = "orderSn",value = "按订单Sn查询"),
             @ApiImplicitParam(paramType = "query",dataType = "String",name = "beginTime",value = "开始时间"),
             @ApiImplicitParam(paramType = "query",dataType = "String",name = "endTime",value = "结束时间"),
-            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "page",value = "页码",defaultValue = "1"),
-            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "pageSize",value = "页码大小",defaultValue = "10"),
+            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "page",value = "页码"),
+            @ApiImplicitParam(paramType = "query",dataType = "Integer",name = "pageSize",value = "页码大小"),
     })
     @ApiResponses({
             @ApiResponse(code=0,message = "成功")
@@ -272,7 +272,7 @@ public class Ordercontroller {
                                    @RequestParam(required = false,defaultValue = "10")int pageSize)
     {
         ReturnObject returnObject=orderService.GetShopOrderList(authorization,shopId,orderSn,beginTime,endTime,page,pageSize);
-
+        logger.info("get shop detail "+returnObject.getCode());
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
         } else {
@@ -373,7 +373,7 @@ public class Ordercontroller {
                              @PathVariable("id") Long id,
                              @RequestBody OrderFreightSn orderFreightSn)
     {
-        logger.info("putDeliver shopId:" + shopId + " id = " + id);
+        logger.info("putDeliver shopId:" + shopId + " id = " + id+"  SN:"+orderFreightSn.getFreightSn());
         ReturnObject returnObject=orderService.putDeliver(shopId,id,orderFreightSn);
 
         if (returnObject.getCode() == ResponseCode.OK) {

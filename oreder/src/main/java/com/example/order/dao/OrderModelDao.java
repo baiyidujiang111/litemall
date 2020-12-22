@@ -121,7 +121,7 @@ public class OrderModelDao {
                     duration2=Duration.between(orders.getGmtCreate(),end);
                     if(!(duration_begin_end.toMinutes()>duration1.toMinutes()&&duration_begin_end.toMinutes()>duration2.toMinutes()))
                     {
-                        list.remove(orders);
+                        iterator.remove();
                     }
                 }
             }
@@ -422,7 +422,7 @@ public class OrderModelDao {
         OrdersExample ordersExample=new OrdersExample();
 
         OrdersExample.Criteria criteria=ordersExample.createCriteria();
-        criteria.andIdEqualTo(authorization);
+        //criteria.andIdEqualTo(authorization);
         criteria.andShopIdEqualTo(shopId);
         List<Orders> list;
         list= ordersMapper.selectByExample(ordersExample);
@@ -432,12 +432,13 @@ public class OrderModelDao {
         int total;//总订单数量
         if (list==null||list.isEmpty())
         {
-            return new ReturnObject();
+            logger.info("shopdetailtest33333");
+            return new ReturnObject<>(ResponseCode.OK);
         }
         else
         {
             //如果指定sn
-            if(orderSn.length()>0)
+            if(orderSn!=null)
             {
                 Iterator<Orders> iterator1 = list.iterator();
                 while(iterator1.hasNext()){
@@ -449,21 +450,24 @@ public class OrderModelDao {
                 }
             }
             //筛选符合时间条件的订单
-            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime begin=LocalDateTime.parse(beginTime,df);
-            LocalDateTime end=LocalDateTime.parse(endTime,df);
-            Duration duration1;
-            Duration duration2;
-            Duration duration_begin_end=Duration.between(begin,end);
+            if (beginTime!=null&&endTime!=null)
+            {
+                DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime begin=LocalDateTime.parse(beginTime,df);
+                LocalDateTime end=LocalDateTime.parse(endTime,df);
+                Duration duration1;
+                Duration duration2;
+                Duration duration_begin_end=Duration.between(begin,end);
 
-            Iterator<Orders> iterator1 = list.iterator();
-            while(iterator1.hasNext()) {
-                Orders orders = iterator1.next();
-                duration1=Duration.between(begin,orders.getGmtCreate());
-                duration2=Duration.between(orders.getGmtCreate(),end);
-                if(!(duration_begin_end.toMinutes()>duration1.toMinutes()&&duration_begin_end.toMinutes()>duration2.toMinutes()))
-                {
-                    iterator1.remove();
+                Iterator<Orders> iterator1 = list.iterator();
+                while(iterator1.hasNext()) {
+                    Orders orders = iterator1.next();
+                    duration1=Duration.between(begin,orders.getGmtCreate());
+                    duration2=Duration.between(orders.getGmtCreate(),end);
+                    if(!(duration_begin_end.toMinutes()>duration1.toMinutes()&&duration_begin_end.toMinutes()>duration2.toMinutes()))
+                    {
+                        iterator1.remove();
+                    }
                 }
             }
             //计算总页面和总数
@@ -474,9 +478,9 @@ public class OrderModelDao {
             total=list.size();
             //根据页码和页面大小进行设置
             //list1为最终返回集合
-            List<Orders> list1=null;
+            List<Orders> list1=new ArrayList<>();
             int page1=1;
-            int i=1;
+            int i=0;
             for(Orders orders:list)
             {
                 if(page1==page)
@@ -486,7 +490,7 @@ public class OrderModelDao {
                 i++;
                 if(i==pageSize)
                 {
-                    i=1;
+                    i=0;
                     page1++;
                     if (page1>page) {
                         break;
@@ -494,12 +498,16 @@ public class OrderModelDao {
                 }
             }
             //封装data
-            List<SimpleOrderInfo> simpleOrderInfo=null;
-            for(Orders orders:list)
-            {
-                simpleOrderInfo.add(new SimpleOrderInfo(orders));
+            OrderListBo orderListModel=new OrderListBo();
+            orderListModel.setPage(page);
+            orderListModel.setPages(pages);
+            orderListModel.setPageSize(pageSize);
+            orderListModel.setTotal(total);
+            for (Orders orders : list) {
+                orderListModel.getOrderListModelItems().add(new OrderListModelItem(orders));
+                logger.info("shopdetailtest");
             }
-            returnObject=new ReturnObject(simpleOrderInfo);
+            returnObject=new ReturnObject<>(orderListModel);
             return returnObject;
         }
     }
@@ -606,20 +614,22 @@ public class OrderModelDao {
 
         for (Orders orders:list)
         {
-            if(orders.getState().equals(2)||orders.getState().equals(21))
+            logger.info(orders.getState().toString());
+            if(orders.getState().equals((byte)2)||orders.getState().equals((byte)21))
             {
                 //将订单状态设置为已发货
                 orders.setState((byte)24);
                 //运单信息
                 orders.setShipmentSn(orderFreightSn.getFreightSn());
                 int i=ordersMapper.updateByPrimaryKeySelective(orders);
-                logger.info("orderSN:"+orders.getOrderSn()+"  "+i);
+                logger.info("orderSN:"+orders.getOrderSn()+"  yes"+i);
                 System.out.println("orderSN:"+orders.getOrderSn());
                 returnObject=new ReturnObject<>(ResponseCode.OK);
+                break;
             }
             else
             {
-                logger.info("orderSN:"+orders.getOrderSn());
+                logger.info("orderSN:"+orders.getOrderSn()+"no");
                 returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
             }
         }
