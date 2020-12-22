@@ -17,13 +17,11 @@ public class OrderServiceImpl implements OrderServiceDubbo {
 
     @Override
     public Long GetShopIdByOrderId(Long id) {
-        orderModelDao.GetShopIdByOrderId(id);
-        return null;
+        return orderModelDao.GetShopIdByOrderId(id);
     }
 
     @Override
     public Long GetUserIdByOrderId(Long id) {
-        orderModelDao.GetUserIdByOrderId(id);
-        return null;
+        return orderModelDao.GetUserIdByOrderId(id);
     }
 }
