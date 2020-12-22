@@ -9,4 +9,6 @@ public interface OrderServiceDubbo {
     Long GetShopIdByOrderId(Long id);
 
     Long GetUserIdByOrderId(Long id);
+
+    Long GetUserIdByOrder_Item_Id(Long item_id);
 }

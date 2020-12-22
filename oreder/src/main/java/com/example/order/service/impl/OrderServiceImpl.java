@@ -24,4 +24,9 @@ public class OrderServiceImpl implements OrderServiceDubbo {
     public Long GetUserIdByOrderId(Long id) {
         return orderModelDao.GetUserIdByOrderId(id);
     }
+
+    @Override
+    public Long GetUserIdByOrder_Item_Id(Long item_id) {
+        return orderModelDao.GetUserIdByOrder_Item_Id(item_id);
+    }
 }
