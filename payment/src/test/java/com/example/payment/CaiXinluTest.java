@@ -145,7 +145,6 @@ public class CaiXinluTest {
 
 
     /**
-     * todo:需要dubbo
      * 通过orderId查找refund  orderId不属于Token解析出来的userId
      */
     @Test
@@ -246,7 +245,7 @@ public class CaiXinluTest {
     }
 
     /**
-     * todo:需要dubbo，暂时无法测试
+     *
      * 通过orderId和shopId查找refund  通过orderId找shopId 返回的shopId与路径上的shopId不符
      */
     @Test

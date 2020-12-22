@@ -91,7 +91,7 @@ public class publicPaymentControllerTest
                         .getResponseBody();
     }
 
-    /**
+    /** todo:需要其他模块dubbo
      * 通过aftersaleId查找refund  orderId不属于Token解析出来的userId
      */
     @Test
@@ -113,7 +113,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void getRefundTest4() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(1L, 100l, 100);
         byte[] responseString =
                 mallClient.get().uri("/payment/orders/{id}/refunds",1)
                         .header("authorization", token)
@@ -162,7 +162,7 @@ public class publicPaymentControllerTest
 
     }
 
-    /**
+    /** todo:需要其他模块接口
      * 通过aftersaleId和shopId查找refund  通过aftersaleId找shopId 返回的shopId与路径上的shopId不符
      */
     @Test
@@ -384,7 +384,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void getOrderPaymentTest1() throws Exception {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(1L, 100l, 100);
         byte[] responseString = mallClient.get().uri("/payment/orders/{id}/payments",1L)
                 .header("authorization", token)
                 .exchange()
@@ -570,7 +570,7 @@ public class publicPaymentControllerTest
     // todo 修改 json 字段, 标准api 中为 aftersaleId 而非 afterSaleId
     public void customerGetOrderPayment() throws Exception {
         // userId = 2668
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(2668L, 100l, 100);
         byte[] responseBytes = mallClient
                 .get()
                 .uri("/payment/orders/2203920/payments")
@@ -775,6 +775,7 @@ public class publicPaymentControllerTest
     }
 
     /**
+     * todo:需要到售后服务去查表
      * 管理员查询售后单的支付信息，失败
      * @author 洪晓杰
      */
@@ -793,6 +794,7 @@ public class publicPaymentControllerTest
 
 
     /**
+     * todo:需要到售后服务去查表
      * 管理员查询售后单的支付信息，失败
      * @author 洪晓杰
      */
@@ -812,6 +814,7 @@ public class publicPaymentControllerTest
 
 
     /**
+     * todo:需要到售后服务去查表
      * 管理员查询售后单的支付信息，失败
      * @author 洪晓杰
      */
@@ -837,7 +840,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void userQueryPaymentTest() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(8763l, 100l, 100);
         byte[] responseString=mallClient.get().uri("/payment/orders/{id}/payments",47123)
                 .header("authorization", token)
                 .exchange()
