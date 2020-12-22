@@ -1,6 +1,5 @@
 package com.example.payment.dao;
 
-import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.mapper.PaymentPoMapper;
 import com.example.payment.model.bo.PaymentBo;

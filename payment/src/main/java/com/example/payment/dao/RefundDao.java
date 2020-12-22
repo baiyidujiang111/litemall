@@ -1,12 +1,10 @@
 package com.example.payment.dao;
 
+import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.mapper.PaymentPoMapper;
 import com.example.payment.mapper.RefundPoMapper;
-import com.example.payment.model.bo.PaymentBo;
 import com.example.payment.model.bo.RefundBo;
-import com.example.payment.model.po.PaymentPo;
-import com.example.payment.model.po.PaymentPoExample;
 import com.example.payment.model.po.RefundPo;
 import com.example.payment.model.po.RefundPoExample;
 import com.example.payment.model.vo.AmountVo;
@@ -67,7 +65,15 @@ public class RefundDao {
         {
             refundBos.add(new RefundBo(refundPo));
         }
-        ReturnObject returnObject = new ReturnObject(refundBos);
+        ReturnObject returnObject = null;
+        if(!refundBos.isEmpty())
+        {
+            returnObject=new ReturnObject(refundBos);
+        }
+        else
+        {
+            returnObject=new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         return returnObject;
     }
 
@@ -89,7 +95,16 @@ public class RefundDao {
         {
             refundBos.add(new RefundBo(refundPo));
         }
-        ReturnObject returnObject = new ReturnObject(refundBos);
+
+        ReturnObject returnObject = null;
+        if(!refundBos.isEmpty())
+        {
+            returnObject= new ReturnObject(refundBos);
+        }
+        else
+        {
+            returnObject=new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         return returnObject;
     }
 }
