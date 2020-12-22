@@ -51,19 +51,19 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject GetOrderDetail(Long id,int order_id)
+    public ReturnObject GetOrderDetail(Long id,Long order_id)
     {
         return orderModeldao.GetOrderDetail(id,order_id);
     }
 
     @Transactional
-    public ReturnObject DelOrder(Long user_id,int id)
+    public ReturnObject DelOrder(Long user_id,Long id)
     {
         return orderModeldao.DelOrder(user_id,id);
     }
 
     @Transactional
-    public ReturnObject putOrderIdConfirm(int id)
+    public ReturnObject putOrderIdConfirm(Long id)
     {
         return orderModeldao.putOrderIdConfirm(id);
     }
@@ -89,7 +89,7 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject GetShopOrderDetail(Long authorization,int shopid,int id)
+    public ReturnObject GetShopOrderDetail(Long authorization,Long shopid,Long id)
     {
         return  orderModeldao.GetShopOrderDetail(authorization,shopid,id);
     }

@@ -18,7 +18,7 @@ public class OrderListModelItem {
     private Long pid;
     private Byte orderType;
     private Byte state;
-    private Byte substate;
+    private Byte subState;
     private LocalDateTime gmtCreate;
     private Long discountPrice;
     private Long originPrice;
@@ -35,7 +35,7 @@ public class OrderListModelItem {
         this.pid=orders.getPid();
         this.orderType=orders.getOrderType();
         this.state=orders.getState();
-        this.substate=orders.getSubstate();
+        this.subState=orders.getSubstate();
         this.gmtCreate=orders.getGmtCreate();
         this.discountPrice=orders.getDiscountPrice();
         this.originPrice=orders.getOriginPrice();

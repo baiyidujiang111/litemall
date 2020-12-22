@@ -124,37 +124,7 @@ public class OrderTestCYS {
      *
      * @throws Exception
      */
-    @Test
-    public void markShopOrderDeliverTest3() throws Exception {
-        //String token = this.login("13088admin", "123456");
-        OrderFreightSn orderFreightSn=new OrderFreightSn();
-        orderFreightSn.setFreightSn("dsd");
-        String PieceFreightModelJson = JacksonUtil.toJson(orderFreightSn);
-        String token = new JwtHelper().createToken(7L, 123456L, 100);
-        String responseString = this.mvc.perform(put("/order/shops/3/orders/240025/deliver")
-                .header("authorization", token)
-                //.queryParam("shopId","3L")
-                //.queryParam("id","240025L")
-                /*.content(PieceFreightModelJson)*/)
-                //.queryParam("orderSn","2016102364965"))
-                //.andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errno").value(ResponseCode.RESOURCE_ID_OUTSCOPE.getCode()))
-                .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andReturn().getResponse().getContentAsString();
-        System.out.println(responseString);
 
-      /*  byte[] ret = manageClient.put()
-                .uri("/order/shops/3/orders/240025/deliver")
-                .header("authorization", token)
-                .bodyValue("{\"freightSn\": \"1233\"}")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.errno").isEqualTo(ResponseCode.ORDER_STATENOTALLOW.getCode())
-                .returnResult()
-                .getResponseBodyContent();*/
-
-    }
 
     //1
     @Test
@@ -295,5 +265,104 @@ public class OrderTestCYS {
                 "    ]\n" +
                 "}";
         JSONAssert.assertEquals(expectedResponse,new String(responseString, StandardCharsets.UTF_8),false);
+    }
+
+
+    /**
+     * 查找订单  查询条件：通过orderSn查找
+     */
+    @Test
+    public void getOrders1() throws Exception {
+        //String token = this.userLogin("8606245097", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
+        byte[] responseString =
+                mallClient.get().uri("/order/orders?orderSn=2016102322523&page=1&pageSize=5")
+                        .header("authorization", token)
+                        .exchange()
+                        .expectStatus().isOk()
+                        .expectBody()
+                        .jsonPath("$.errno").isEqualTo(ResponseCode.OK.getCode())
+                        .jsonPath("$.data").exists()
+                        .returnResult()
+                        .getResponseBody();
+
+    }
+
+    /**
+     * 查找订单  查询条件：通过beginTime查找  即查找创建时间在beginTime之后的订单
+     */
+    @Test
+    public void getOrders2() throws Exception {
+        //String token = this.userLogin("8606245097", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
+        byte[] responseString =
+                mallClient.get().uri("/order/orders?page=1&pageSize=5&beginTime=2020-11-24 18:40:20")
+                        .header("authorization", token)
+                        .exchange()
+                        .expectStatus().isOk()
+                        .expectBody()
+                        .jsonPath("$.errno").isEqualTo(ResponseCode.OK.getCode())
+                        .jsonPath("$.data").exists()
+                        .returnResult()
+                        .getResponseBody();
+
+    }
+
+    /**
+     * 查找订单  查询条件：通过endTime查找  即查找创建时间在endTime之前的订单
+     */
+    @Test
+    public void getOrders3() throws Exception {
+        //String token = this.userLogin("8606245097", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
+        byte[] responseString =
+                mallClient.get().uri("/order/orders?page=1&endTime=2021-11-23 18:40:20&pageSize=5")
+                        .header("authorization", token)
+                        .exchange()
+                        .expectStatus().isOk()
+                        .expectBody()
+                        .jsonPath("$.errno").isEqualTo(ResponseCode.OK.getCode())
+                        .jsonPath("$.data").exists()
+                        .returnResult()
+                        .getResponseBody();
+
+    }
+
+    /**
+     * 查找订单  查询条件：通过beginTime和endTime联合查找  即查找创建时间在beginTime和endTime之间的订单
+     */
+    @Test
+    public void getOrders4() throws Exception {
+        //String token = this.userLogin("8606245097", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
+        byte[] responseString =
+                mallClient.get().uri("/order/orders?page=1&endTime=2021-11-23 18:40:20&pageSize=5&beginTime=2020-11-24 18:40:20")
+                        .header("authorization", token)
+                        .exchange()
+                        .expectStatus().isOk()
+                        .expectBody()
+                        .jsonPath("$.errno").isEqualTo(ResponseCode.OK.getCode())
+                        .jsonPath("$.data").exists()
+                        .returnResult()
+                        .getResponseBody();
+
+    }
+
+    /**
+     * 查找订单  查询条件：beginTime或endTime格式错误,返回错误码503
+     */
+    @Test
+    public void getOrders6() throws Exception {
+        //String token = this.userLogin("8606245097", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
+        byte[] responseString =
+                mallClient.get().uri("/order/orders?page=1&pageSize=5&beginTime=2020-11-2418:40:20")
+                        .header("authorization", token)
+                        .exchange()
+                        .expectStatus().isBadRequest()
+                        .expectBody()
+                        .jsonPath("$.errno").isEqualTo(ResponseCode.FIELD_NOTVALID.getCode())
+                        .returnResult()
+                        .getResponseBody();
     }
 }

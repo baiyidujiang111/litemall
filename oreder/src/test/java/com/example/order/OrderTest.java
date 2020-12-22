@@ -1,6 +1,9 @@
 package com.example.order;
 
+import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.JwtHelper;
+import cn.edu.xmu.ooad.util.ResponseCode;
+import com.example.order.model.vo.OrderFreightSn;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -66,5 +68,37 @@ class OrderTest {
                 .andExpect(jsonPath("$.errmsg").value("成功"))
                 .andReturn().getResponse().getContentAsString();
         return  JacksonUtil.parseString(response, "data");*/
+    }
+
+    @org.junit.jupiter.api.Test
+    public void markShopOrderDeliverTest3() throws Exception {
+        //String token = this.login("13088admin", "123456");
+        OrderFreightSn orderFreightSn=new OrderFreightSn();
+        orderFreightSn.setFreightSn("dsd");
+        String PieceFreightModelJson = JacksonUtil.toJson(orderFreightSn);
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
+        String responseString = this.mvc.perform(put("/order/shops/3/orders/240025/deliver")
+                        .header("authorization", token)
+                //.queryParam("shopId","3L")
+                //.queryParam("id","240025L")
+                /*.content(PieceFreightModelJson)*/)
+                //.queryParam("orderSn","2016102364965"))
+                //.andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.errno").value(ResponseCode.RESOURCE_ID_OUTSCOPE.getCode()))
+                .andExpect(content().contentType("application/json;charset=UTF-8"))
+                .andReturn().getResponse().getContentAsString();
+        System.out.println(responseString);
+
+      /*  byte[] ret = manageClient.put()
+                .uri("/order/shops/3/orders/240025/deliver")
+                .header("authorization", token)
+                .bodyValue("{\"freightSn\": \"1233\"}")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.errno").isEqualTo(ResponseCode.ORDER_STATENOTALLOW.getCode())
+                .returnResult()
+                .getResponseBodyContent();*/
+
     }
 }

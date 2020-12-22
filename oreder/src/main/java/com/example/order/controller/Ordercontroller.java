@@ -147,7 +147,7 @@ public class Ordercontroller {
     @Audit
     @GetMapping("/orders/{id}")
     @ResponseBody
-    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") int id)
+    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") Long id)
     {
         logger.debug("User_id:"+authorization+" Order_id:"+id);
         ReturnObject returnObject=orderService.GetOrderDetail(authorization,id);
@@ -192,7 +192,7 @@ public class Ordercontroller {
     })
     @Audit
     @PutMapping("/orders/{id}/confirm")
-    public Object putOrderIdConfirm(@LoginUser Long authorization,@PathVariable int id)
+    public Object putOrderIdConfirm(@LoginUser Long authorization,@PathVariable Long id)
     {
         ReturnObject returnObject=orderService.putOrderIdConfirm(id);
 
@@ -215,7 +215,7 @@ public class Ordercontroller {
     })
     @Audit
     @DeleteMapping("/orders/{id}")
-    public Object DelOrder(@LoginUser Long authorization,@PathVariable int id)
+    public Object DelOrder(@LoginUser Long authorization,@PathVariable Long id)
     {
         ReturnObject returnObject=orderService.DelOrder(authorization,id);
 
@@ -318,9 +318,10 @@ public class Ordercontroller {
     })
     @Audit
     @GetMapping("/shops/{shopId}/orders/{id}")
+    @ResponseBody
     public Object GetShopOrderDetail(@LoginUser Long authorization,
-                                     @PathVariable int shopId,
-                                     @PathVariable int id)
+                                     @PathVariable Long shopId,
+                                     @PathVariable Long id)
     {
         ReturnObject returnObject=orderService.GetShopOrderDetail(authorization,shopId,id);
 
