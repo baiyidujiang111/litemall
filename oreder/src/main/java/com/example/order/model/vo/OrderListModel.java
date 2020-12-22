@@ -15,5 +15,5 @@ public class OrderListModel {
     private int pageSize;
     private int total;
     private int pages;//总页数
-    private List<OrderListModelItem> orderListModelItems=null;
+    private List<OrderListModelItem> list=null;
 }

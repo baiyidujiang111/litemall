@@ -56,7 +56,7 @@
                          targetProject="src/main/resources">
             <property name="enableSubPackages" value="false"/>
         </sqlMapGenerator>
-        <!--生成Dao类存放位置-->
+        <!--生成Mapper类存放位置-->
         <javaClientGenerator type="XMLMAPPER"
                              targetPackage="com.example.order.mapper"
                              targetProject="src/main/java">
