@@ -5,12 +5,16 @@ import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.util.Common;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import com.example.orderservice.OrderServiceDubbo;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
 import com.example.payment.model.vo.PaymentInfoVo;
 import com.example.payment.service.PaymentService;
 import com.example.payment.service.RefundService;
 import io.swagger.annotations.*;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +25,12 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/payment/orders",produces = "application/json;charset=UTF-8")
 public class PaymentOrderController {
+
+    private static final Logger logger = LoggerFactory.getLogger(PaymentOrderController.class);
+
+
+    @DubboReference
+    OrderServiceDubbo orderServiceDubbo;
 
     @Autowired
     PaymentService paymentService;
@@ -76,15 +86,22 @@ public class PaymentOrderController {
     @Audit
     public Object getPaymentByOrderId(@PathVariable("id") long id,@LoginUser Long userId)
     {
-        /*先校验一下该orderid是不是本用户自己的*/
 
-        /* 若正常，接着处理 */
-        ReturnObject returnObject = paymentService.getPaymentsByOrderId(id);
-        if(returnObject.getCode()==ResponseCode.OK)
+        /*先校验一下该orderid是不是本用户自己的*/
+        Long chceckID = orderServiceDubbo.GetUserIdByOrderId(id);
+        if(!chceckID.equals(userId))
         {
-            return Common.getListRetObject(returnObject);
-        }else{
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
             return Common.decorateReturnObject(returnObject);
+        }else {
+            /* 若正常，接着处理 */
+            ReturnObject returnObject = paymentService.getPaymentsByOrderId(id);
+            if(returnObject.getCode()==ResponseCode.OK)
+            {
+                return Common.getListRetObject(returnObject);
+            }else{
+                return Common.decorateReturnObject(returnObject);
+            }
         }
     }
 
@@ -99,16 +116,26 @@ public class PaymentOrderController {
     @Audit
     public Object getRefundByOrderId(@PathVariable("id") long orderId,@LoginUser Long userId)
     {
-        /*先校验一下该orderid是不是本用户自己的*/
 
-        /* 若正常，接着处理 */
-        ReturnObject returnObject = refundService.getRefundsByOrderId(orderId);
-        if(returnObject.getCode()!= ResponseCode.RESOURCE_ID_NOTEXIST)
+        /*先校验一下该orderid是不是本用户自己的*/
+        logger.info("in get refund by order id: "+orderId+" userID: "+userId);
+        Long chceckID = orderServiceDubbo.GetUserIdByOrderId(orderId);
+        logger.info("checked ID "+chceckID);
+        if(!userId.equals(chceckID))
         {
-            return Common.getListRetObject(returnObject);
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            return Common.decorateReturnObject(returnObject);
+        }else {
+            /* 若正常，接着处理 */
+            ReturnObject returnObject = refundService.getRefundsByOrderId(orderId);
+            if(returnObject.getCode()!= ResponseCode.RESOURCE_ID_NOTEXIST)
+            {
+                return Common.getListRetObject(returnObject);
+            }
+            httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return Common.getNullRetObj(returnObject,httpServletResponse);
         }
-        httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        return Common.getNullRetObj(returnObject,httpServletResponse);
+
     }
 
 

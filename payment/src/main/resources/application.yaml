@@ -1,3 +1,21 @@
+dubbo:
+  # 配置服务信息
+  application:
+    name: order-consumer
+    # 禁用QOS同一台机器可能会有端口冲突现象
+    qos-enable: false
+    qos-accept-foreign-ip: false
+  # 配置注册中心
+  registry:
+    address: nacos://localhost:8848
+  # 设置协议-协议由提供方指定消费方被动接受
+  protocol:
+    name: dubbo
+    port: 20880
+  # 设置超时时间
+  consumer:
+    timeout: 4000
+    check: false
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -28,7 +46,7 @@ spring:
     sql-script-encoding: UTF-8
 
 public-test:
-  managementgate: localhost:8081
-  mallgate: localhost:8081
+  managementgate: localhost:8089
+  mallgate: localhost:8089
 server:
-  port: 8081
+  port: 8089

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @time 2020-12-21 1:18
  * @description:
  */
-@DubboService(version = "0.0.1-SNAPSHOT")
+@DubboService
 public class OrderServiceImpl implements OrderServiceDubbo {
     @Autowired
     private OrderModelDao orderModelDao;

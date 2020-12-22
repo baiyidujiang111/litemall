@@ -13,15 +13,15 @@ dubbo:
     qos-accept-foreign-ip: false
   # 配置注册中心
   registry:
-    address: spring-cloud://localhost
+    address: nacos://localhost:8848
   # 设置协议-协议由提供方指定消费方被动接受
-  #protocol:
-  #  name: dubbo
-  # port: 20880
+  protocol:
+    name: dubbo
+    port: 20880
   # 设置超时时间
   consumer:
     timeout: 4000
-    check: false
+    check: true
 
 spring:
   datasource:
@@ -29,9 +29,9 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     #initialization-mode: always
     #name: order
-    url: jdbc:mysql://localhost:3306/order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/oomall_order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
     username: root
-    password: 81577215z
+    password: alex20000211
     #schema: classpath:schema.sql
     #data: classpath:testdata.sql
     druid:
