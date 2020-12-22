@@ -13,6 +13,7 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,8 @@ public class PaymentOrderByShopController {
     PaymentService paymentService;
     @Autowired
     RefundService refundService;
+    @Autowired
+    HttpServletResponse httpServletResponse;
 
     
     /** 
@@ -145,13 +148,43 @@ public class PaymentOrderByShopController {
     {
         /* 先根据aftersaleId查出shopId */
         /* 与传入的shopId一致才可放行 */
-        ReturnObject returnObject = new ReturnObject(refundService.getRefundsByAftersaleId(aftersaleId));
-        if(returnObject.getCode() == ResponseCode.OK)
-            return Common.getRetObject(returnObject);
-        else
+        //ReturnObject returnObject = refundService.getRefundsByAftersaleId(aftersaleId);
+//        if(returnObject.getCode() == ResponseCode.OK)
+//        {
+//            System.out.println("ok");
+//            return Common.getListRetObject(returnObject);
+//        }
+
+
+//        if(returnObject.getCode()!=ResponseCode.RESOURCE_ID_NOTEXIST)
+//        {
+//
+//            return Common.getListRetObject(returnObject);
+//        }
+//
+//        else
+//        {
+//            System.out.println("fail");
+//            return Common.decorateReturnObject(returnObject);
+//        }
+        System.out.println("ccccc");
+        ReturnObject returnObject = refundService.getRefundsByAftersaleId(aftersaleId);
+        System.out.println(returnObject.getCode());
+        System.out.println("ad"+(returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST));
+        if(returnObject.getCode()!=ResponseCode.RESOURCE_ID_NOTEXIST)
         {
-            return Common.decorateReturnObject(returnObject);
+            System.out.println("dddddd");
+            System.out.println("为空吗1"+(returnObject.getData()==null));
+            System.out.println("为空吗2"+(returnObject.getData()==""));
+            System.out.println("为空吗2"+(returnObject.getData()));
+            return Common.getListRetObject(returnObject);
         }
+
+
+        httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        System.out.println(returnObject);
+        System.out.println("到这一步");
+        return Common.getNullRetObj(returnObject, httpServletResponse);
     }
 
 
