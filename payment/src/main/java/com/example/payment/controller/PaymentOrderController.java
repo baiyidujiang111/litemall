@@ -88,21 +88,29 @@ public class PaymentOrderController {
     {
 
         /*先校验一下该orderid是不是本用户自己的*/
-        Long chceckID = orderServiceDubbo.GetUserIdByOrderId(id);
-        if(!chceckID.equals(userId))
+        Long checkID = orderServiceDubbo.GetUserIdByOrderId(id);
+        if(checkID==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return Common.getNullRetObj(returnObject,httpServletResponse);
+        }
+        /*检验权限*/
+        if(!checkID.equals(userId))
         {
             ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
             return Common.decorateReturnObject(returnObject);
-        }else {
-            /* 若正常，接着处理 */
-            ReturnObject returnObject = paymentService.getPaymentsByOrderId(id);
-            if(returnObject.getCode()==ResponseCode.OK)
-            {
-                return Common.getListRetObject(returnObject);
-            }else{
-                return Common.decorateReturnObject(returnObject);
-            }
         }
+            /* 若正常，接着处理 */
+
+        ReturnObject returnObject = paymentService.getPaymentsByOrderId(id);
+        if(returnObject.getCode()==ResponseCode.OK)
+        {
+            return Common.getListRetObject(returnObject);
+        }else{
+            return Common.decorateReturnObject(returnObject);
+        }
+
     }
 
     /**
@@ -117,26 +125,36 @@ public class PaymentOrderController {
     public Object getRefundByOrderId(@PathVariable("id") long orderId,@LoginUser Long userId)
     {
 
-        /*先校验一下该orderid是不是本用户自己的*/
+        /*根据orderId获取UserId*/
         logger.info("in get refund by order id: "+orderId+" userID: "+userId);
-        Long chceckID = orderServiceDubbo.GetUserIdByOrderId(orderId);
-        logger.info("checked ID "+chceckID);
-        if(!userId.equals(chceckID))
+        Long checkID = orderServiceDubbo.GetUserIdByOrderId(orderId);
+        logger.info("checked ID "+checkID);
+
+        /* 若路径上的资源ID不存在，返回404 */
+        if(checkID==null)
         {
-            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
-            return Common.decorateReturnObject(returnObject);
-        }else {
-            /* 若正常，接着处理 */
-            ReturnObject returnObject = refundService.getRefundsByOrderId(orderId);
-            if(returnObject.getCode()!= ResponseCode.RESOURCE_ID_NOTEXIST)
-            {
-                return Common.getListRetObject(returnObject);
-            }
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
             httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return Common.getNullRetObj(returnObject,httpServletResponse);
         }
 
+        /*校验权限*/
+        if(!userId.equals(checkID))
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            return Common.decorateReturnObject(returnObject);
+        }
+
+        /* 若正常，接着处理 */
+        ReturnObject returnObject = refundService.getRefundsByOrderId(orderId);
+        if(returnObject.getCode()== ResponseCode.OK)
+        {
+            return Common.getListRetObject(returnObject);
+        }
+        return Common.decorateReturnObject(returnObject);
+
     }
+
 
 
 

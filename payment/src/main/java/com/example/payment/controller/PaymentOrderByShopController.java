@@ -64,13 +64,23 @@ public class PaymentOrderByShopController {
     public Object getPaymentsByOrderIdAndShopId(@PathVariable("shopId") long shopId,
                                                 @PathVariable("id") long orderId)
     {
+
         /* 先根据orderId查出shopId */
         Long checkShopId = orderServiceDubbo.GetShopIdByOrderId(orderId);
+        if(checkShopId==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+
+        }
+
+        /*验权限*/
         if(!checkShopId.equals(shopId))
         {
             ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
             return Common.decorateReturnObject(returnObject);
         }
+
         /* 与传入的shopId一致才可放行 */
         ReturnObject returnObject = paymentService.getPaymentsByOrderId(orderId);
         if(returnObject.getCode()==ResponseCode.OK)
@@ -158,6 +168,13 @@ public class PaymentOrderByShopController {
         logger.info("in get getRefundsByOrderIdAndShopId shopId: "+shopId +" order ID "+orderId);
         /* 先根据orderId查出shopId */
         Long checkShopId = orderServiceDubbo.GetShopIdByOrderId(orderId);
+        /* 如果这个id是空的话，返回*/
+        if(checkShopId==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
+        /* 权限校验 */
         if(!checkShopId.equals(shopId))
         {
             ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
