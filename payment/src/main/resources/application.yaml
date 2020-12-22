@@ -1,4 +1,6 @@
 dubbo:
+  config:
+    multiple: true
   # 配置服务信息
   application:
     name: order-consumer
@@ -6,8 +8,11 @@ dubbo:
     qos-enable: false
     qos-accept-foreign-ip: false
   # 配置注册中心
-  registry:
-    address: nacos://localhost:8848
+  registries:
+    order:
+      address: nacos://localhost:8848
+    other:
+      address: nacos://172.16.1.156:8848
   # 设置协议-协议由提供方指定消费方被动接受
   protocol:
     name: dubbo
@@ -46,7 +51,7 @@ spring:
     sql-script-encoding: UTF-8
 
 public-test:
-  managementgate: localhost:8089
-  mallgate: localhost:8089
+  managementgate: 47.110.147.122:18089
+  mallgate: 47.110.147.122:18089
 server:
   port: 8089

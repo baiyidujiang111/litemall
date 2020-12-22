@@ -31,10 +31,10 @@ import java.nio.charset.StandardCharsets;
 public class publicPaymentControllerTest
 {
     @Value("${public-test.managementgate}")
-    private String managementGate="localhost:8081";
+    private String managementGate="47.110.147.122:18089";
 
     @Value("${public-test.mallgate}")
-    private String mallGate="localhost:8081";
+    private String mallGate="47.110.147.122:18089";
 
     private WebTestClient manageClient;
 
@@ -91,7 +91,7 @@ public class publicPaymentControllerTest
                         .getResponseBody();
     }
 
-    /** todo:需要其他模块dubbo
+    /** todo:需要其他模块dubbo,应该已修正
      * 通过aftersaleId查找refund  orderId不属于Token解析出来的userId
      */
     @Test
@@ -162,7 +162,7 @@ public class publicPaymentControllerTest
 
     }
 
-    /** todo:需要其他模块接口
+    /** todo:好像和底下什么测试冲突
      * 通过aftersaleId和shopId查找refund  通过aftersaleId找shopId 返回的shopId与路径上的shopId不符
      */
     @Test
