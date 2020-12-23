@@ -1,6 +1,9 @@
 package com.example.order.model.vo;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
+
+import javax.validation.constraints.NotNull;
 
 /***
  * @author yansong chen
@@ -9,5 +12,7 @@ import lombok.Data;
  */
 @Data
 public class OrderFreightSn {
+    @NotNull
+    @Length(min = 1)
     private String freightSn;
 }

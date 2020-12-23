@@ -378,190 +378,7 @@ public class OrderTestFrom6 {
      * 支付部分
      */
 
-    /**
-     * 店家获取店内订单的支付单
-     * @throws Exception
-     */
-    @Test
-    @Order(22)
-    // todo 修改 json 字段, 标准api 中为 aftersaleId 而非 afterSaleId
-    public void shopGetOrderPayment() throws Exception {
-        // depart = 7L
-        String token = adminLogin("shopadmin_No2", "123456");;
-        byte[] responseBytes = manageClient
-                .get()
-                .uri("/order/shops/7/orders/2203919/payments")
-                .header("authorization", token)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.errno").isEqualTo(ResponseCode.OK.getCode())
-                .returnResult()
-                .getResponseBodyContent();
 
-        assert responseBytes != null;
-        String responseString = new String(responseBytes, StandardCharsets.UTF_8);
-        String expectedString = "{\n" +
-                "    \"errno\": 0,\n" +
-                "    \"data\": [\n" +
-                "        {\n" +
-                "            \"id\": 1398040,\n" +
-                "            \"orderId\": 2203919,\n" +
-                "            \"amount\": 25535,\n" +
-                "            \"actualAmount\": 25535,\n" +
-                "            \"paymentPattern\": \"002\",\n" +
-                "            \"payTime\": \"2020-12-16T19:57:01\",\n" +
-                "            \"beginTime\": \"2020-12-16T18:33:01\",\n" +
-                "            \"endTime\": \"2020-12-16T19:57:01\",\n" +
-                "            \"gmtCreate\": \"2020-12-16T18:33:01\",\n" +
-                "            \"gmtModified\": \"2020-12-16T20:02:03\",\n" +
-                "            \"aftersaleId\": null\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"errmsg\": \"成功\"\n" +
-                "}";
-        JSONAssert.assertEquals(expectedString, responseString, false);
-    }
-
-    /**
-     * 店家获取店内订单的支付单 (无权限)
-     * @throws Exception
-     */
-    @Test
-    @Order(23)
-    public void shopGetOrderPaymentNoAuth() throws Exception {
-        // depart = 7L
-        String token = adminLogin("shopadmin_No2", "123456");;
-        byte[] responseBytes = manageClient
-                .get()
-                .uri("/order/shops/7/orders/2203923/payments")
-                .header("authorization", token)
-                .exchange()
-                .expectBody()
-                .jsonPath("$.errno").isEqualTo(ResponseCode.RESOURCE_ID_OUTSCOPE.getCode())
-                .returnResult()
-                .getResponseBodyContent();
-    }
-
-    /**
-     * 店家获取店内订单的支付单 (无此订单号)
-     * @throws Exception
-     */
-    @Test
-    @Order(24)
-    public void shopGetOrderPaymentNoOrder() throws Exception {
-        // depart = 7L
-        String token = adminLogin("shopadmin_No2", "123456");;
-        byte[] responseBytes = manageClient
-                .get()
-                .uri("/order/shops/7/orders/2203928/payments")
-                .header("authorization", token)
-                .exchange()
-                .expectStatus().isNotFound()
-                .expectBody()
-                .jsonPath("$.errno").isEqualTo(ResponseCode.RESOURCE_ID_NOTEXIST.getCode())
-                .returnResult()
-                .getResponseBodyContent();
-    }
-
-    /**
-     * 买家获取本人名下的支付单
-     * @throws Exception
-     */
-    @Test
-    @Order(25)
-    // todo 修改 json 字段, 标准api 中为 aftersaleId 而非 afterSaleId
-    public void customerGetOrderPayment() throws Exception {
-        // userId = 2668
-        String token = this.customerLogin("48613511536", "123456");
-        byte[] responseBytes = mallClient
-                .get()
-                .uri("/order/orders/2203920/payments")
-                .header("authorization", token)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.errno").isEqualTo(ResponseCode.OK.getCode())
-                .returnResult()
-                .getResponseBodyContent();
-
-        assert responseBytes != null;
-        String responseString = new String(responseBytes, StandardCharsets.UTF_8);
-        String expectedString = "{\n" +
-                "    \"errno\": 0,\n" +
-                "    \"data\": [\n" +
-                "        {\n" +
-                "            \"id\": 1398041,\n" +
-                "            \"orderId\": 2203920,\n" +
-                "            \"amount\": 66800,\n" +
-                "            \"actualAmount\": 66800,\n" +
-                "            \"paymentPattern\": \"002\",\n" +
-                "            \"payTime\": \"2020-12-16T19:57:01\",\n" +
-                "            \"beginTime\": \"2020-12-16T18:33:01\",\n" +
-                "            \"endTime\": \"2020-12-16T19:57:01\",\n" +
-                "            \"gmtCreate\": \"2020-12-16T18:33:01\",\n" +
-                "            \"gmtModified\": \"2020-12-16T20:02:03\",\n" +
-                "            \"aftersaleId\": null\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"id\": 1398042,\n" +
-                "            \"orderId\": 2203920,\n" +
-                "            \"amount\": 200,\n" +
-                "            \"actualAmount\": 200,\n" +
-                "            \"paymentPattern\": \"001\",\n" +
-                "            \"payTime\": \"2020-12-16T19:57:01\",\n" +
-                "            \"beginTime\": \"2020-12-16T18:33:01\",\n" +
-                "            \"endTime\": \"2020-12-16T19:57:01\",\n" +
-                "            \"gmtCreate\": \"2020-12-16T18:33:01\",\n" +
-                "            \"gmtModified\": \"2020-12-16T20:02:03\",\n" +
-                "            \"aftersaleId\": null\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"errmsg\": \"成功\"\n" +
-                "}";
-        JSONAssert.assertEquals(expectedString, responseString, false);
-    }
-
-    /**
-     * 买家获订单的支付单 (无权限)
-     * @throws Exception
-     */
-    @Test
-    @Order(26)
-    public void customerGetOrderPaymentNoAuth() throws Exception {
-        // userId = 2668
-        String token = this.customerLogin("48613511536", "123456");
-        byte[] responseBytes = mallClient
-                .get()
-                .uri("/order/orders/2203924/payments")
-                .header("authorization", token)
-                .exchange()
-                .expectBody()
-                .jsonPath("$.errno").isEqualTo(ResponseCode.RESOURCE_ID_OUTSCOPE.getCode())
-                .returnResult()
-                .getResponseBodyContent();
-    }
-
-    /**
-     * 买家获取订单的支付单 (无此订单号)
-     * @throws Exception
-     */
-    @Test
-    @Order(27)
-    public void customerGetOrderPaymentNoOrder() throws Exception {
-        // userId = 2668
-        String token = this.customerLogin("48613511536", "123456");
-        byte[] responseBytes = mallClient
-                .get()
-                .uri("/order/orders/2203928/payments")
-                .header("authorization", token)
-                .exchange()
-                .expectStatus().isNotFound()
-                .expectBody()
-                .jsonPath("$.errno").isEqualTo(ResponseCode.RESOURCE_ID_NOTEXIST.getCode())
-                .returnResult()
-                .getResponseBodyContent();
-    }
 
     /**
      * 获取订单概要,伪造token
@@ -589,7 +406,8 @@ public class OrderTestFrom6 {
     @Order(2)
     public void customerGetAllSimpleOrders2() throws Exception {
         //userid=59
-        String token=this.login("39634362551", "123456");
+        //String token=this.login("39634362551", "123456");
+        String token = new JwtHelper().createToken(59L, 123456L, 100);
         byte[] responseString = mallClient.get().uri("/order/orders?page=1&pageSize=5")
                 .header("authorization", token)
                 .exchange()
@@ -782,6 +600,7 @@ public class OrderTestFrom6 {
      * createdBy yujiawei 2020/12/10 17:07
      * modifiedBy
      */
+    //222
     @Test
     @Order(11)
     public void UsermodifyOrder2() throws Exception {
@@ -851,7 +670,8 @@ public class OrderTestFrom6 {
                 "  \"regionId\": 1,\n" +
                 "  \"address\": \"曾厝垵\",\n" +
                 "  \"mobile\": \"111\"}";
-        String token=this.login("39634362551", "123456");
+        //String token=this.login("39634362551", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
         byte[] responseString = mallClient.put().uri("/order/orders/38058")
                 .header("authorization", token)
                 .bodyValue(orderJson)
@@ -913,6 +733,7 @@ public class OrderTestFrom6 {
      * createdBy yujiawei 2020/12/3 17:07
      * modifiedBy
      */
+    //222
     @Test
     @Order(16)
     public void UserdeleteOrder2() throws Exception {
@@ -951,6 +772,7 @@ public class OrderTestFrom6 {
      */
     @Test
     @Order(17)
+    //222
     public void UserdeleteOrder3() throws Exception {
 
         String token=this.login("79734441805", "123456");
@@ -1122,7 +944,7 @@ public class OrderTestFrom6 {
     @Order(24)
     public void UserconfirmOrder4() throws Exception {
         String token =/* this.login("39634362551", "123456");*/
-        new JwtHelper().createToken(58L, 100l, 100);
+        new JwtHelper().createToken(59L, 100l, 100);
         //String token = createTestToken(8L, 2L, 100);
         byte[] responseString = mallClient.put().uri("/order/orders/{id}/confirm", 38056)
                 .header("authorization", token)
@@ -1178,6 +1000,7 @@ public class OrderTestFrom6 {
      * modifiedBy
      */
     @Test
+    //2222
     @Order(27)
     public void UserchangeOrderToNormal2() throws Exception {
         String token = this.login("79734441805", "123456");
@@ -1233,7 +1056,8 @@ public class OrderTestFrom6 {
     @Test
     @Order(29)
     public void UserchangeOrderToNormal4() throws Exception {
-        String token = this.login("39634362551", "123456");
+        //String token = this.login("39634362551", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
         byte[] responseString = mallClient.post().uri("/order/orders/{id}/groupon-normal", 38057)
                 .header("authorization", token)
                 .exchange()

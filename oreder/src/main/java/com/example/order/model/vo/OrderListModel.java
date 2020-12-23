@@ -2,6 +2,7 @@ package com.example.order.model.vo;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /***
@@ -15,5 +16,5 @@ public class OrderListModel {
     private int pageSize;
     private int total;
     private int pages;   //总页数
-    private List<OrderListModelItem> list=null;
+    private List<OrderListModelItem> list=new ArrayList<>();
 }

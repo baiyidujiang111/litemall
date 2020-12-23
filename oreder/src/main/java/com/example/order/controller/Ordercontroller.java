@@ -90,8 +90,8 @@ public class Ordercontroller {
     @ResponseBody
     public Object getOrderList(@LoginUser @ApiIgnore Long id,
                                String orderSn, Integer state,
-                               @Validated String beginTime,
-                               @Validated String endTime,
+                               @RequestParam(required = false,defaultValue = "1900-01-01 00:00:00") String beginTime,
+                               @RequestParam(required = false,defaultValue = "2100-01-01 00:00:00") String endTime,
                                @RequestParam(required = false,defaultValue = "1") Integer page,
                                @RequestParam(required = false,defaultValue = "10")Integer pageSize,
                                HttpServletResponse httpServletResponse)
@@ -126,7 +126,18 @@ public class Ordercontroller {
         returnObject=orderService.GetListOrder(id,orderSn,state,beginTime,endTime,page,pageSize);
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -211,7 +222,10 @@ public class Ordercontroller {
     })
     @Audit
     @PutMapping("/orders/{id}")
-    public Object modifyOrder(@LoginUser Long authorization, @PathVariable Long id,@Validated @RequestBody modifyOrder order,BindingResult result,HttpServletResponse httpServletResponse)
+    public Object modifyOrder(@LoginUser Long authorization,
+                              @PathVariable Long id,
+                              @Validated @RequestBody modifyOrder order,
+                              BindingResult result,HttpServletResponse httpServletResponse)
     {
         if(result.hasErrors())
         {
@@ -357,7 +371,9 @@ public class Ordercontroller {
     @ResponseBody
     public Object GetShopOrderList(@LoginUser Long authorization,
                                    @PathVariable("shopId") Long shopId,
-                                   Long customerId,String orderSn,String beginTime,String endTime,
+                                   Long customerId,String orderSn,
+                                   @RequestParam(required = false,defaultValue = "1900-01-01 00:00:00") String beginTime,
+                                   @RequestParam(required = false,defaultValue = "2100-01-01 00:00:00") String endTime,
                                    @RequestParam(required = false,defaultValue = "1")int page,
                                    @RequestParam(required = false,defaultValue = "10")int pageSize,
                                    HttpServletResponse httpServletResponse)
@@ -541,8 +557,14 @@ public class Ordercontroller {
     @ResponseBody
     public Object putDeliver(@PathVariable("shopId") Long shopId,
                              @PathVariable("id") Long id,
-                             @RequestBody OrderFreightSn orderFreightSn)
+                             @RequestBody @Validated OrderFreightSn orderFreightSn,
+                             BindingResult result,HttpServletResponse httpServletResponse)
     {
+        if(result.hasErrors())
+        {
+            return Common.processFieldErrors(result, httpServletResponse);
+        }
+
         logger.info("putDeliver shopId:" + shopId + " id = " + id+"  SN:"+orderFreightSn.getFreightSn());
         ReturnObject returnObject=orderService.putDeliver(shopId,id,orderFreightSn);
 

@@ -44,6 +44,7 @@ public class OrderTestFrom5 {
     }
 
     private String login(String userName, String password) throws Exception {
+        initialize();
         return new JwtHelper().createToken(356L, 123456L, 100);
     }
 
@@ -75,6 +76,7 @@ public class OrderTestFrom5 {
      * modified 2020/12/03 17:25
      * modified 2020/12/15 11:26
      */
+    //2222
     @Test
     @Order(1)
     public void getOrderCompleteInfoSucceed() throws Exception {
@@ -152,7 +154,8 @@ public class OrderTestFrom5 {
     @Test
     @Order(2)
     public void getOrderCompleteInfoIdOutScope() throws Exception {
-        String token = this.login("98970287664", "123456");
+        //String token = this.login("98970287664", "123456");
+        String token = new JwtHelper().createToken(8763L, 123456L, 100);
         Long orderId = 68050L;
         String getURL = "/order/orders/" + orderId;
         try {
@@ -593,7 +596,8 @@ public class OrderTestFrom5 {
     @Test
     @Order(14)
     public void confirmOrderReceivedIdOutScope() throws Exception {
-        String token = this.login("98970287664", "123456");
+        //String token = this.login("98970287664", "123456");
+        String token = new JwtHelper().createToken(7L, 123456L, 100);
         Long orderId = 68086L;
         String putURL = "/order/orders/" + orderId + "/confirm";
         try {
