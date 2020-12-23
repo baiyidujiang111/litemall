@@ -9,7 +9,6 @@ import org.springframework.cache.annotation.EnableCaching;
 @SpringBootApplication(scanBasePackages = {"cn.edu.xmu.ooad","com.example.freight"})
 @MapperScan("com.example.freight.mapper")
 @EnableCaching
-@EnableDubbo
 public class FreightApplication {
 
     public static void main(String[] args) {
