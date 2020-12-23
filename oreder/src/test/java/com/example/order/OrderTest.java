@@ -76,8 +76,8 @@ class OrderTest {
         OrderFreightSn orderFreightSn=new OrderFreightSn();
         orderFreightSn.setFreightSn("dsd");
         String PieceFreightModelJson = JacksonUtil.toJson(orderFreightSn);
-        String token = new JwtHelper().createToken(7L, 123456L, 100);
-        String responseString = this.mvc.perform(put("/order/shops/3/orders/240025/deliver")
+        String token = new JwtHelper().createToken(8763L, 123456L, 100);
+        String responseString = this.mvc.perform(delete("/order/orders/47011/")
                         .header("authorization", token)
                 //.queryParam("shopId","3L")
                 //.queryParam("id","240025L")

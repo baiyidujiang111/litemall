@@ -41,6 +41,7 @@ public class OrderModelDao {
     private OrderItemMapper orderItemMapper;
 
     private Byte ORDER_TYPE_NORMAL=0;
+    private Byte SUBESTATE=8;
     /**
     * @Description:获得订单状态
     * @Param: []
@@ -81,13 +82,13 @@ public class OrderModelDao {
         OrdersExample ordersExample=new OrdersExample();
         OrdersExample.Criteria criteria=ordersExample.createCriteria();
         criteria.andCustomerIdEqualTo(id);
-
+        criteria.andBeDeletedEqualTo((byte)0);
         List<Orders> list;
         list=ordersMapper.selectByExample(ordersExample);
 
         int pages;//用于存储总页面
         int total;
-        if (list==null||list.isEmpty())
+        if (list==null||list.size()==0)
         {
             OrderListBo orderListModel=new OrderListBo();
             orderListModel.setPage(page);
@@ -125,7 +126,7 @@ public class OrderModelDao {
                     Orders orders = iterator.next();
                     duration1=Duration.between(begin,orders.getGmtCreate());
                     duration2=Duration.between(orders.getGmtCreate(),end);
-                    if(!(duration_begin_end.toMinutes()>duration1.toMinutes()&&duration_begin_end.toMinutes()>duration2.toMinutes()))
+                    if(!(duration_begin_end.toSeconds()>duration1.toSeconds()&&duration_begin_end.toSeconds()>duration2.toSeconds()))
                     {
                         iterator.remove();
                     }
@@ -145,8 +146,7 @@ public class OrderModelDao {
                 }
                 else
                 {
-                    Byte n=state.byteValue();
-                    if (orders.getState().equals(n))
+                    if (orders.getState().equals((byte)state.intValue()))
                     {
                         flag_state=false;
                     }
@@ -169,7 +169,7 @@ public class OrderModelDao {
             //list1为最终返回集合
             List<Orders> list1= new ArrayList<>();
             int page1=1;
-            int i=1;
+            int i=0;
             for(Orders orders:list)
             {
                 if(page1==page)
@@ -179,7 +179,7 @@ public class OrderModelDao {
                 i++;
                 if(i==pageSize)
                 {
-                    i=1;
+                    i=0;
                     page1++;
                     if (page1>page) {
                         break;
@@ -192,7 +192,7 @@ public class OrderModelDao {
             orderListModel.setPages(pages);
             orderListModel.setPageSize(pageSize);
             orderListModel.setTotal(total);
-            Iterator<Orders> iterator1 = list.iterator();
+            Iterator<Orders> iterator1 = list1.iterator();
             while(iterator1.hasNext()){
                 Orders orders = iterator1.next();
                 orderListModel.getOrderListModelItems().add(new OrderListModelItem(orders));
@@ -263,12 +263,16 @@ public class OrderModelDao {
         criteria.andIdEqualTo(order_id);
         List<Orders> list= ordersMapper.selectByExample(ordersExample);
         OrderDetailBo orderDetailBo = null;
-        if(list==null)
+        if(list==null||list.size()==0)
         {
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
         for(Orders orders:list)
         {
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getCustomerId().equals(id))
             {
                 OrderBo orderBo=new OrderBo(orders);
@@ -314,16 +318,31 @@ public class OrderModelDao {
         }
         for (Orders orders:list)
         {
+            if(orders.getSubstate()==null)
+            {
+                orders.setSubstate(SUBESTATE);
+            }
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getCustomerId().equals(user_id))
             {
-                orders.setConsignee(modifyOrder.getConsignee());
-                orders.setRegionId(modifyOrder.getRegionId());
-                orders.setAddress(modifyOrder.getAddress());
-                orders.setMobile(modifyOrder.getMobile());
-                orders.setGmtModified(LocalDateTime.now());
+                if (orders.getSubstate().equals((byte)24))
+                {
+                    return new ReturnObject(ResponseCode.ORDER_STATENOTALLOW);
+                }
+                else
+                {
+                    orders.setConsignee(modifyOrder.getConsignee());
+                    orders.setRegionId(modifyOrder.getRegionId());
+                    orders.setAddress(modifyOrder.getAddress());
+                    orders.setMobile(modifyOrder.getMobile());
+                    orders.setGmtModified(LocalDateTime.now());
 
-                ordersMapper.updateByPrimaryKeySelective(orders);
-                returnObject =new ReturnObject<>(ResponseCode.OK);
+                    ordersMapper.updateByPrimaryKeySelective(orders);
+                    returnObject =new ReturnObject<>(ResponseCode.OK);
+                }
             }
             else
             {
@@ -334,6 +353,13 @@ public class OrderModelDao {
         return returnObject;
     }
 
+    /**
+    * @Description: 买家取消订单
+    * @Param: [user_id, id]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject
+    * @Author: yansong chen
+    * @Date: 2020-12-23 15:08
+    */
     public ReturnObject DelOrder(Long user_id,Long id)
     {
         ReturnObject returnObject = null;
@@ -347,27 +373,37 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getCustomerId().equals(user_id))
             {
-                //已完成状态
-                Byte i=3;
-                if(!orders.getState().equals(i))
+                if(orders.getSubstate()==null)
                 {
-                    //API中写的是800 这里给到的状态码是801
-                    returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                    orders.setSubstate(SUBESTATE);
+                }
+                //已完成、已发货状态
+                if(orders.getSubstate()==null||!(orders.getSubstate().equals((byte)24)))
+                {
+                    if (orders.getState().equals((byte)4))
+                    {
+                        returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                    }
+                    orders.setBeDeleted((byte)1);
+                    ordersMapper.updateByPrimaryKeySelective(orders);
+                    returnObject=new ReturnObject<>(ResponseCode.OK);
                 }
                 else
                 {
-                    orders.setBeDeleted((byte) 1);
-                    ordersMapper.updateByPrimaryKeySelective(orders);
-                    returnObject=new ReturnObject<>(ResponseCode.OK);
+                    //API中写的是800 这里给到的状态码是801
+                    returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
                 }
             }
             else
             {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
-
         }
         return returnObject;
     }
@@ -385,9 +421,17 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getCustomerId().equals(user_id))
             {
-                if(!orders.getState().equals((byte)2))
+                if(orders.getSubstate()==null)
+                {
+                    orders.setSubstate(SUBESTATE);
+                }
+                if(!(orders.getState().equals((byte)2)&&orders.getSubstate().equals((byte)24)))
                 {
                     //API中写的是800 这里给到的状态码是801
                     returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
@@ -430,20 +474,34 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getCustomerId().equals(user_id))
             {
-                Byte i=1;//待付款状态
-
-                if(orders.getState().equals(i))
+                Byte i=3;//已完成状态
+                if(orders.getSubstate()==null)
+                {
+                    orders.setSubstate(SUBESTATE);
+                }
+                if(orders.getState().equals(i)||orders.getState().equals((byte)4)||orders.getSubstate().equals((byte)11))
                 {
                     //API中写的是800 这里给到的状态码是801
                     returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
                 }
                 else
                 {
-                    orders.setOrderType(ORDER_TYPE_NORMAL);
-                    ordersMapper.updateByPrimaryKeySelective(orders);
-                    returnObject=new ReturnObject<>(ResponseCode.OK);
+                    if (orders.getSubstate().equals((byte)24)||orders.getSubstate().equals((byte)21))
+                    {
+                        returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                    }
+                    else
+                    {
+                        orders.setOrderType(ORDER_TYPE_NORMAL);
+                        ordersMapper.updateByPrimaryKeySelective(orders);
+                        returnObject=new ReturnObject<>(ResponseCode.OK);
+                    }
                 }
             }
             else
@@ -454,16 +512,24 @@ public class OrderModelDao {
         return returnObject;
     }
 
+    /**
+    * @Description: 获得商店订单概要
+    * @Param: [authorization, shopId, customerId, orderSn, beginTime, endTime, page, pageSize]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject
+    * @Author: yansong chen
+    * @Date: 2020-12-23 15:30
+    */
     public ReturnObject GetShopOrderList(Long authorization, Long shopId,Long customerId,
                                          String orderSn,String beginTime,String endTime,
                                          int page,int pageSize)
     {
-        //关于订单id到底是orderSn还是id
         ReturnObject returnObject;
         OrdersExample ordersExample=new OrdersExample();
 
         OrdersExample.Criteria criteria=ordersExample.createCriteria();
         //criteria.andIdEqualTo(authorization);
+        //去除逻辑删除的订单
+        criteria.andBeDeletedEqualTo((byte)0);
         criteria.andShopIdEqualTo(shopId);
         List<Orders> list;
         list= ordersMapper.selectByExample(ordersExample);
@@ -522,7 +588,7 @@ public class OrderModelDao {
                     Orders orders = iterator1.next();
                     duration1=Duration.between(begin,orders.getGmtCreate());
                     duration2=Duration.between(orders.getGmtCreate(),end);
-                    if(!(duration_begin_end.toMinutes()>duration1.toMinutes()&&duration_begin_end.toMinutes()>duration2.toMinutes()))
+                    if(!(duration_begin_end.toSeconds()>duration1.toSeconds()&&duration_begin_end.toSeconds()>duration2.toSeconds()))
                     {
                         iterator1.remove();
                     }
@@ -584,6 +650,10 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getShopId().equals(shopid))
             {
                 orders.setMessage(message.getMessage());
@@ -599,6 +669,13 @@ public class OrderModelDao {
         return returnObject;
     }
 
+    /**
+    * @Description: 商家查询订单详细
+    * @Param: [authorization, shopid, id]
+    * @return: cn.edu.xmu.ooad.util.ReturnObject
+    * @Author: yansong chen
+    * @Date: 2020-12-23 15:27
+    */
     public ReturnObject GetShopOrderDetail(Long authorization,Long shopid,Long id)
     {
         ReturnObject returnObject = null;
@@ -607,14 +684,18 @@ public class OrderModelDao {
         criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
         OrderDetailBo orderDetailBo = null;
-
+        System.out.println("getshopdetailbefore"+ list.size());
         if(list==null||list.size()==0)
         {
-            logger.info("getshopdetail"+String.valueOf(list.size()));
+            logger.info("getshopdetail"+ list.size());
             return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
         for(Orders orders:list)
         {
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getShopId().equals(shopid))
             {
                 OrderBo orderBo=new OrderBo(orders);
@@ -661,18 +742,27 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if (orders.getShopId().equals(shopId))
             {
+                if(orders.getSubstate()==null)
+                {
+                    orders.setSubstate(SUBESTATE);
+                }
                 Byte i=11;//新订单子状态状态
                 if(!(orders.getSubstate().equals(i)||orders.getSubstate().equals((byte)12)
-                    ||orders.getSubstate().equals((byte)22)||orders.getSubstate().equals((byte)23)))
+                    ||orders.getSubstate().equals((byte)22)||orders.getSubstate().equals((byte)23)
+                    ||orders.getSubstate().equals((byte)21)||orders.getSubstate().equals(null)))
                 {
                     //API中写的是800 这里给到的状态码是801
                     returnObject=new ReturnObject(ResponseCode.ORDER_STATENOTALLOW);
                 }
                 else
                 {
-                    if(orders.getState().equals((byte)1))
+                    if(orders.getState().equals((byte)1)||orders.getState().equals((byte)2))
                     {
                         //orders.setOrderType(ORDER_TYPE_NORMAL);
                         //设置状态已取消
@@ -708,9 +798,17 @@ public class OrderModelDao {
         for (Orders orders:list)
         {
             logger.info(orders.getState().toString());
+            if(orders.getBeDeleted().equals((byte)1))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
             if(orders.getShopId().equals(shopId))
             {
-                if (orders.getState().equals((byte)2)&&orders.getSubstate().equals((byte)21))
+                if(orders.getSubstate()==null)
+                {
+                    orders.setSubstate(SUBESTATE);
+                }
+                if(orders.getState().equals((byte)2)&&orders.getSubstate().equals((byte)21))
                 {
                     //将订单子状态设置为已发货
                     orders.setSubstate((byte)24);
