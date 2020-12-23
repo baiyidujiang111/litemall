@@ -8,9 +8,11 @@ import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
 import cn.edu.xmu.oomall.other.service.IAftersaleService;
 import com.example.orderservice.OrderServiceDubbo;
+import com.example.payment.PaymentApplication;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
 import com.example.payment.model.bo.PaymentBo;
+import com.example.payment.model.po.PaymentPo;
 import com.example.payment.model.vo.AmountVo;
 import com.example.payment.model.vo.PaymentInfoVo;
 import com.example.payment.service.PaymentService;
@@ -250,5 +252,39 @@ public class PaymentOrderByShopController {
         }
     }
 
+    @PostMapping("{shopId}/payments/{id}/refund")
+    public Object createPaymentsForRefundByShop(@PathVariable long shopId,
+                                                @PathVariable("id") long paymentId,
+                                                @RequestBody AmountVo vo)
+    {
+
+        PaymentBo paymentBo = (PaymentBo) paymentService.getPaymentPoById(paymentId).getData();
+        if(paymentBo!=null && paymentBo.getOrderId()!=null)//说明这个payment对应着一个order
+        {
+            //通过order，根据orderid查shopid
+            Long orderidByPayment=paymentBo.getOrderId();
+            Long orderidByOrderService=paymentBo.getOrderId();//暂时让它通过
+            if(!orderidByPayment.equals(orderidByOrderService))
+            {
+                return Common.decorateReturnObject(new ReturnObject());
+            }
+            return Common.getRetObject(paymentService.createPaymentByShop(paymentId,vo.getAmount()));
+        }
+        else if(paymentBo.getAftersaleId()!=null)//说明这个payment对应着一个aftersale
+        {
+            Long aftersaleidbypayment=paymentBo.getAftersaleId();
+            Long aftersaleidByAftersaleService=paymentBo.getAftersaleId();
+            if(!aftersaleidbypayment.equals(aftersaleidByAftersaleService))
+            {
+                return Common.decorateReturnObject(new ReturnObject());
+            }
+            return Common.getRetObject(paymentService.createAftersalePaymentByShop(paymentId,vo.getAmount()));
+        }
+        else //这个支付单出了问题
+        {
+            return Common.decorateReturnObject(new ReturnObject());
+
+        }
+    }
 
 }

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -91,25 +92,6 @@ public class PaymentDao {
         return new ReturnObject(payPatternAndNameRetVos);
     }
 
-    /** 
-    * @Description: 创建支付单，todo 
-    * @Param: [id, vo] 
-    * @return: cn.edu.xmu.ooad.util.ReturnObject 
-    * @Author: alex101
-    * @Date: 2020/12/16 
-    */
-    public ReturnObject createPayment(Long id, PaymentInfoVo vo)
-    {
-        ReturnObject returnObject=null;
-        PaymentBo paymentBo = new PaymentBo();
-        paymentBo.setPaymentPattern(vo.getPaymentPattern());
-        paymentBo.setOrderId(id);
-        /* 初始设置支付成功 */
-        paymentBo.setState((byte)1 );
-        paymentBo.setAftersaleId(null);
-        //paymentBo.
-        return null;
-    }
 
 
     /** 
@@ -140,5 +122,60 @@ public class PaymentDao {
         ReturnObject returnObject = null;
         return returnObject;
     }
+
+    public ReturnObject createPayment(Long id, PaymentInfoVo vo)
+    {
+        ReturnObject returnObject=null;
+        PaymentPo paymentPo = new PaymentPo();
+        paymentPo.setPaymentPattern(vo.getPaymentPattern());
+        paymentPo.setOrderId(id);
+        /* 初始设置支付成功 */
+        paymentPo.setState((byte)1 );
+        paymentPo.setAftersaleId(null);
+        paymentPo.setAmount(vo.getPrice());
+        paymentPo.setActualAmount(vo.getPrice());
+        Date gmtcreate=new Date();
+        paymentPo.setGmtCreate(gmtcreate);
+        PaymentBo paymentBo = new PaymentBo(paymentPo);
+        //paymentBo.
+        paymentPoMapper.insert(paymentPo);
+        return new ReturnObject(paymentBo);
+    }
+    public ReturnObject createAftersalePayment(Long id,PaymentInfoVo vo)
+    {
+        ReturnObject returnObject=null;
+        PaymentPo paymentPo=new PaymentPo();
+        paymentPo.setPaymentPattern(vo.getPaymentPattern());
+        paymentPo.setAftersaleId(id);
+        paymentPo.setGmtCreate(new Date());
+        paymentPo.setAmount(vo.getPrice());
+        paymentPo.setActualAmount(vo.getPrice());
+        PaymentBo paymentBo=new PaymentBo(paymentPo);
+        paymentPoMapper.insert(paymentPo);
+        return new ReturnObject(paymentBo);
+    }
+    public ReturnObject createPaymentByShop(Long id,Long refundAmount)
+    {
+        ReturnObject returnObject=null;
+        PaymentPo paymentPo=new PaymentPo();
+        paymentPo.setAmount(refundAmount);
+        paymentPo.setActualAmount(refundAmount);
+        paymentPo.setOrderId(id);
+        PaymentBo paymentBo=new PaymentBo(paymentPo);
+        paymentPoMapper.insert(paymentPo);
+        return new ReturnObject(paymentBo);
+    }
+    public ReturnObject createAftersalePaymentByShop(Long id,Long refundAmount)
+    {
+        ReturnObject returnObject=null;
+        PaymentPo paymentPo=new PaymentPo();
+        paymentPo.setAmount(refundAmount);
+        paymentPo.setActualAmount(refundAmount);
+        paymentPo.setAftersaleId(id);
+        PaymentBo paymentBo=new PaymentBo(paymentPo);
+        paymentPoMapper.insert(paymentPo);
+        return new ReturnObject(paymentBo);
+    }
+
 
 }
