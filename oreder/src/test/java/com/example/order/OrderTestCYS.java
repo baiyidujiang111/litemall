@@ -819,7 +819,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/4000000/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/4000000/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -843,7 +843,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/1/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/1/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -867,7 +867,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48050/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48050/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -891,7 +891,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48051/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48051/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -915,7 +915,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48053/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48053/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -939,7 +939,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48054/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48054/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -963,7 +963,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48055/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48055/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -987,7 +987,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48056/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48056/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -1011,7 +1011,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48057/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48057/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -1032,7 +1032,7 @@ public class OrderTestCYS {
     public void getorderState() throws Exception {
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString=manageClient.get().uri("/orders/states").header("authorization",token).exchange()
+        byte[] responseString=manageClient.get().uri("/order/orders/states").header("authorization",token).exchange()
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.errno").isEqualTo(ResponseCode.OK.getCode())
@@ -1099,7 +1099,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete0() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48050")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48050")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1109,7 +1109,7 @@ public class OrderTestCYS {
                 .returnResult()
                 .getResponseBodyContent();
 
-        byte[] confirmString = manageClient.get().uri("/shops/406/orders/48050")
+        byte[] confirmString = manageClient.get().uri("/order/shops/406/orders/48050")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1135,7 +1135,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete1() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48051")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48051")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1145,7 +1145,7 @@ public class OrderTestCYS {
                 .returnResult()
                 .getResponseBodyContent();
 
-        byte[] confirmString = manageClient.get().uri("/shops/406/orders/48051")
+        byte[] confirmString = manageClient.get().uri("/order/shops/406/orders/48051")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1171,7 +1171,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete2() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/4000000")
+        byte[] responseString = manageClient.delete().uri("order/shops/406/orders/4000000")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isNotFound()
@@ -1191,7 +1191,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete3() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/1")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/1")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isForbidden()
@@ -1211,7 +1211,7 @@ public class OrderTestCYS {
     @Order(25)
     public void shopsShopIdOrdersIdDelete4() throws Exception {
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48052")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48052")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1231,7 +1231,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete5() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48053")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48053")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1241,7 +1241,7 @@ public class OrderTestCYS {
                 .returnResult()
                 .getResponseBodyContent();
 
-        byte[] confirmString = manageClient.get().uri("/shops/406/orders/48053")
+        byte[] confirmString = manageClient.get().uri("/order/shops/406/orders/48053")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1267,7 +1267,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete6() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48054")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48054")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1280,7 +1280,7 @@ public class OrderTestCYS {
         String expectedResponse = "{\"errno\": 0,\"errmsg\": \"成功\"}";
         JSONAssert.assertEquals(expectedResponse, new String(responseString, StandardCharsets.UTF_8), false);
 
-        byte[] confirmString = manageClient.get().uri("/shops/406/orders/48054")
+        byte[] confirmString = manageClient.get().uri("/order/shops/406/orders/48054")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1306,7 +1306,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete7() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48055")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48055")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1326,7 +1326,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete8() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48056")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48056")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
@@ -1346,7 +1346,7 @@ public class OrderTestCYS {
     public void shopsShopIdOrdersIdDelete9() throws Exception {
 
         String token = new JwtHelper().createToken(1L, 123456L, 100);
-        byte[] responseString = manageClient.delete().uri("/shops/406/orders/48057")
+        byte[] responseString = manageClient.delete().uri("/order/shops/406/orders/48057")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
