@@ -65,7 +65,7 @@ public class JwtHelper {
         try {
             Algorithm algorithm = Algorithm.HMAC256(SECRET);
             Map<String, Object> map = new HashMap<String, Object>();
-            Date nowDate = new Date();
+            Date nowDate = new Date(System.currentTimeMillis()-10000);
             Date expireDate = getAfterDate(nowDate, 0, 0, 0, 0, 0, expireTime);
             map.put("alg", "HS256");
             map.put("typ", "JWT");

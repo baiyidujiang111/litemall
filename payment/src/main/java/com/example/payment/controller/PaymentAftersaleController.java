@@ -44,8 +44,10 @@ public class PaymentAftersaleController {
     @Audit
     public Object createPaymentsForRefund(@PathVariable Long id, @RequestBody PaymentInfoVo vo)
     {
-        return refundService.createPayment(id,vo);
+
+        return Common.getRetObject(paymentService.createAftersalePayment(id,vo));
     }
+
 
     /**
      * @Description: 买家查询自己的支付信息(售后单) todo:还没完成dubbo调用

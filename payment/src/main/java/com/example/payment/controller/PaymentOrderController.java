@@ -16,6 +16,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -59,11 +60,45 @@ public class PaymentOrderController {
     })
     @Audit
     @PostMapping("{id}/payments")
-    public Object createPayment(@PathVariable Long id, @RequestBody PaymentInfoVo vo)
+    public Object createPayment(@PathVariable Long id, @RequestBody PaymentInfoVo vo,HttpServletResponse httpServletResponse,@LoginUser Long userID)
     {
 
-        /* 待完成 还没想好怎么做 */
-        return paymentService.createPayment(id,vo);
+        logger.info("in create Payment");
+        Long getShopId= orderServiceDubbo.GetShopIdByOrderId(id);
+        Long checkedUserId = orderServiceDubbo.GetUserIdByOrderId(id);
+        /* 判断订单存在 */
+        if(getShopId==null)
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST));
+        }
+        /* 判断订单归属 */
+        if(!userID.equals(checkedUserId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
+
+        Byte state = orderServiceDubbo.GetStateByOrder_id(id);
+        if(!state.equals(Byte.valueOf("1")))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.ORDER_STATENOTALLOW));
+        }
+
+        Long price= orderServiceDubbo.GetTotalPriceByOrderId(id);
+        if(price>vo.getPrice())
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.REFUND_MORE));
+        }
+
+
+        ReturnObject returnObject = paymentService.createPayment(id,vo);
+        if(returnObject.getCode()==ResponseCode.OK)
+        {
+            httpServletResponse.setStatus(HttpStatus.CREATED.value());
+            orderServiceDubbo.SetState2_Substate12(id);
+            return Common.getRetObject(returnObject);
+
+        }
+        return Common.decorateReturnObject(returnObject);
     }
 
     /** 
