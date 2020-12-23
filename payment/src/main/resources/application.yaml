@@ -29,7 +29,7 @@ spring:
     name: oomall_order
     url: jdbc:mysql://localhost:3306/oomall_order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
     username: root
-    password: alex20000211
+    password: alex20000211 #alex20000211 #ooad109mysql
     #schema: classpath:order-schema.sql
     #data: classpath:order-data.sql
     druid:

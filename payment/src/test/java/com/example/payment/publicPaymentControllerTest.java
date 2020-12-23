@@ -61,7 +61,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void getRefundTest1() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(1L, 100l, 100);
         byte[] responseString =
                 mallClient.get().uri("/payment/aftersales/{id}/refunds",1)
                         .header("authorization", token)
@@ -436,7 +436,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void getAfterSalePaymentTest1() throws Exception {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(1L, 100l, 100);
         byte[] responseString = mallClient.get().uri("/payment/aftersales/{id}/payments",1L)
                 .header("authorization", token)
                 .exchange()
@@ -777,6 +777,7 @@ public class publicPaymentControllerTest
     /**
      * todo:需要到售后服务去查表
      * 管理员查询售后单的支付信息，失败
+     * 能查出来47011
      * @author 洪晓杰
      */
     @Test
