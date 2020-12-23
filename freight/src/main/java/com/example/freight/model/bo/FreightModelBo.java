@@ -42,7 +42,7 @@ public class FreightModelBo implements VoObject {
         gmtModified = freightModelPo.getGmtModified();
     }
 
-    public Long computeFreight(int weight,Long count)
+    public Long computeFreight(Long weight,Long count)
     {
         return freightModelDetail.getFreight(weight,count);
     }

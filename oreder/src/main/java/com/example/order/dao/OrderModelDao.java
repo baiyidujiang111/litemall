@@ -813,7 +813,7 @@ public class OrderModelDao {
         Long price=0L;
         for(Orders orders:list)
         {
-            price+=orders.getFreightPrice()+orders.getDiscountPrice();
+            price+=orders.getFreightPrice()-orders.getDiscountPrice()+orders.getOriginPrice();
         }
         return price;
     }
