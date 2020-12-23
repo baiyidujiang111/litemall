@@ -262,9 +262,9 @@ public class PaymentOrderByShopController {
         if(paymentBo!=null && paymentBo.getOrderId()!=null)//说明这个payment对应着一个order
         {
             //通过order，根据orderid查shopid
-            Long orderidByPayment=paymentBo.getOrderId();
-            Long orderidByOrderService=paymentBo.getOrderId();//暂时让它通过
-            if(!orderidByPayment.equals(orderidByOrderService))
+            long orderidByPayment=paymentBo.getOrderId();
+            long shopidByOrderService=orderServiceDubbo.GetShopIdByOrderId(orderidByPayment);
+            if(shopId!=shopidByOrderService)
             {
                 return Common.decorateReturnObject(new ReturnObject());
             }
