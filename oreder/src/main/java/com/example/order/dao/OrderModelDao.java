@@ -350,7 +350,7 @@ public class OrderModelDao {
             if(orders.getCustomerId().equals(user_id))
             {
                 //已完成状态
-                Byte i=4;
+                Byte i=3;
                 if(!orders.getState().equals(i))
                 {
                     //API中写的是800 这里给到的状态码是801
@@ -663,17 +663,27 @@ public class OrderModelDao {
         {
             if (orders.getShopId().equals(shopId))
             {
-                int i=1;//禁止状态
-                if(orders.getState()==i)
+                Byte i=11;//新订单子状态状态
+                if(!(orders.getSubstate().equals(i)||orders.getSubstate().equals((byte)12)
+                    ||orders.getSubstate().equals((byte)22)||orders.getSubstate().equals((byte)23)))
                 {
                     //API中写的是800 这里给到的状态码是801
                     returnObject=new ReturnObject(ResponseCode.ORDER_STATENOTALLOW);
                 }
                 else
                 {
-                    orders.setOrderType(ORDER_TYPE_NORMAL);
-                    ordersMapper.updateByPrimaryKeySelective(orders);
-                    returnObject=new ReturnObject(ResponseCode.OK);
+                    if(orders.getState().equals((byte)1))
+                    {
+                        //orders.setOrderType(ORDER_TYPE_NORMAL);
+                        //设置状态已取消
+                        orders.setState((byte)4);
+                        ordersMapper.updateByPrimaryKeySelective(orders);
+                        returnObject=new ReturnObject(ResponseCode.OK);
+                    }
+                    else
+                    {
+                        returnObject=new ReturnObject(ResponseCode.ORDER_STATENOTALLOW);
+                    }
                 }
             }
             else
@@ -698,9 +708,9 @@ public class OrderModelDao {
         for (Orders orders:list)
         {
             logger.info(orders.getState().toString());
-            if(orders.getState().equals((byte)2)&&orders.getSubstate().equals((byte)21))
+            if(orders.getShopId().equals(shopId))
             {
-                if (orders.getShopId().equals(shopId))
+                if (orders.getState().equals((byte)2)&&orders.getSubstate().equals((byte)21))
                 {
                     //将订单子状态设置为已发货
                     orders.setSubstate((byte)24);
@@ -714,13 +724,13 @@ public class OrderModelDao {
                 }
                 else
                 {
-                    return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+                    logger.info("orderSN:"+orders.getOrderSn()+"no");
+                    returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
                 }
             }
             else
             {
-                logger.info("orderSN:"+orders.getOrderSn()+"no");
-                returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
         }
         return returnObject;
@@ -766,5 +776,45 @@ public class OrderModelDao {
             i=GetUserIdByOrderId(order_id);
         }
         return i;
+    }
+
+    public Byte GetStateByOrder_id(Long id)
+    {
+        OrdersExample example=new OrdersExample();
+        OrdersExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<Orders> list=ordersMapper.selectByExample(example);
+        Byte i = null;
+        for(Orders orders:list)
+        {
+            i=orders.getState();
+        }
+        return i;
+    }
+
+    public void SetState2_Substate12(Long id)
+    {
+        OrdersExample example=new OrdersExample();
+        OrdersExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<Orders> list=ordersMapper.selectByExample(example);
+        for(Orders orders:list)
+        {
+            orders.setState((byte)2);
+            orders.setSubstate((byte)21);
+        }
+    }
+
+    public Long GetTotalPriceByOrderId(Long id) {
+        OrdersExample example=new OrdersExample();
+        OrdersExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<Orders> list=ordersMapper.selectByExample(example);
+        Long price=0L;
+        for(Orders orders:list)
+        {
+            price+=orders.getFreightPrice()+orders.getDiscountPrice();
+        }
+        return price;
     }
 }
