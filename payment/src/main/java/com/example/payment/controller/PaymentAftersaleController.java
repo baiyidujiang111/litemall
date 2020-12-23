@@ -6,6 +6,7 @@ import cn.edu.xmu.ooad.util.Common;
 import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.oomall.other.service.IAftersaleService;
 import com.example.orderservice.OrderServiceDubbo;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/payment/aftersales",produces = "application/json;charset=UTF-8")
+@RequestMapping(value = "/aftersales",produces = "application/json;charset=UTF-8")
 public class PaymentAftersaleController {
 
 
@@ -36,12 +37,17 @@ public class PaymentAftersaleController {
     @Autowired
     HttpServletResponse httpServletResponse;
 
+    @DubboReference(registry = "other")
+    IAftersaleService iAftersaleService;
+
     @PostMapping("{id}/payments")
     @Audit
     public Object createPaymentsForRefund(@PathVariable Long id, @RequestBody PaymentInfoVo vo)
     {
-        return refundService.createPayment(id,vo);
+
+        return Common.getRetObject(paymentService.createAftersalePayment(id,vo));
     }
+
 
     /**
      * @Description: 买家查询自己的支付信息(售后单) todo:还没完成dubbo调用
@@ -60,9 +66,20 @@ public class PaymentAftersaleController {
     })
     @GetMapping("{id}/payments")
     @Audit
-    public Object getAftersaleByAftersaleId(@PathVariable("id")Long aftersaleId)
+    public Object getPaymentByAftersaleId(@PathVariable("id")Long aftersaleId,@LoginUser Long userid)
     {
         /*先校验一下该aftersaleId是不是本用户自己的*/
+        Long checkedUserId = iAftersaleService.findUserIdbyAftersaleId(aftersaleId).getData();
+        if(checkedUserId==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
+        if(!userid.equals(checkedUserId))
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            return Common.decorateReturnObject(returnObject);
+        }
         /* 若正常，接着处理 */
         ReturnObject returnObject = paymentService.getPaymentsByAftersaleId(aftersaleId);
         if(returnObject.getCode()==ResponseCode.OK)
@@ -87,6 +104,18 @@ public class PaymentAftersaleController {
     public Object getRefundByAftersaleId(@PathVariable("id") long aftersaleId,@LoginUser Long userId)
     {
         /*先校验一下该aftersaleId是不是本用户自己的*/
+        Long checkId = iAftersaleService.findUserIdbyAftersaleId(aftersaleId).getData();
+        if(checkId==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
+        if(!userId.equals(checkId))
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            return Common.decorateReturnObject(returnObject);
+        }
+
 
         /* 若正常，接着处理 */
         /*得到refund*/

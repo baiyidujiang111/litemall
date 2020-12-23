@@ -68,11 +68,11 @@ public class OrderModelDao {
     }
 
     /**
-    * @Description: 插入新订单
-     * @Param: [id, orderSn, state, begintime, endtime, page, pageSize]
+    * @Description: 顾客获得订单概要
+    * @Param: [id, orderSn, state, begintime, endtime, page, pageSize]
     * @return: cn.edu.xmu.ooad.util.ReturnObject
     * @Author: yansong chen
-    * @Date: 2020-12-16 21:23
+    * @Date: 2020-12-22 23:34
     */
     public ReturnObject GetListOrder(Long id,String orderSn,Integer state,
                                      String begintime,String endtime,Integer page,Integer pageSize)
@@ -82,14 +82,20 @@ public class OrderModelDao {
         OrdersExample.Criteria criteria=ordersExample.createCriteria();
         criteria.andCustomerIdEqualTo(id);
 
-        List<Orders> list=null;
+        List<Orders> list;
         list=ordersMapper.selectByExample(ordersExample);
 
         int pages;//用于存储总页面
         int total;
         if (list==null||list.isEmpty())
         {
-            return new ReturnObject<>();
+            OrderListBo orderListModel=new OrderListBo();
+            orderListModel.setPage(page);
+            orderListModel.setPages(1);
+            orderListModel.setPageSize(pageSize);
+            orderListModel.setTotal(0);
+            orderListModel.setOrderListModelItems(new ArrayList<>());
+            return new ReturnObject<>(orderListModel);
         }
         else //根据条件筛选订单，list1为最终结果集合
         {
@@ -259,7 +265,7 @@ public class OrderModelDao {
         OrderDetailBo orderDetailBo = null;
         if(list==null)
         {
-            return new ReturnObject<>(ResponseCode.OK);
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
         for(Orders orders:list)
         {
@@ -289,31 +295,42 @@ public class OrderModelDao {
             }
             else {
                 //订单不属于这个顾客
-                returnObject=new ReturnObject<>(ResponseCode.OK);
+                returnObject=new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
         }
         return returnObject;
     }
 
-    public ReturnObject modifyOrder(int id, modifyOrder modifyOrder)
+    public ReturnObject modifyOrder(Long user_id,Long id, modifyOrder modifyOrder)
     {
-        ReturnObject returnObject;
+        ReturnObject returnObject = null;
         OrdersExample example=new OrdersExample();
         OrdersExample.Criteria criteria=example.createCriteria();
-        criteria.andOrderSnEqualTo(String.valueOf(id));
+        criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
-
+        if (list==null||list.size()==0)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         for (Orders orders:list)
         {
-            orders.setConsignee(modifyOrder.getConsignee());
-            orders.setRegionId(modifyOrder.getRegionId());
-            orders.setAddress(modifyOrder.getAddress());
-            orders.setMobile(modifyOrder.getMobile());
-            orders.setGmtModified(LocalDateTime.now());
+            if(orders.getCustomerId().equals(user_id))
+            {
+                orders.setConsignee(modifyOrder.getConsignee());
+                orders.setRegionId(modifyOrder.getRegionId());
+                orders.setAddress(modifyOrder.getAddress());
+                orders.setMobile(modifyOrder.getMobile());
+                orders.setGmtModified(LocalDateTime.now());
 
-            ordersMapper.updateByPrimaryKeySelective(orders);
+                ordersMapper.updateByPrimaryKeySelective(orders);
+                returnObject =new ReturnObject<>(ResponseCode.OK);
+            }
+            else
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            }
+
         }
-        returnObject =new ReturnObject();
         return returnObject;
     }
 
@@ -324,47 +341,69 @@ public class OrderModelDao {
         OrdersExample.Criteria criteria=example.createCriteria();
         criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
+        if (list==null||list.size()==0)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         for(Orders orders:list)
         {
-            //已完成状态
-            Byte i=4;
-            if(!orders.getState().equals(i))
+            if(orders.getCustomerId().equals(user_id))
             {
-                //API中写的是800 这里给到的状态码是801
-                returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                //已完成状态
+                Byte i=3;
+                if(!orders.getState().equals(i))
+                {
+                    //API中写的是800 这里给到的状态码是801
+                    returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                }
+                else
+                {
+                    orders.setBeDeleted((byte) 1);
+                    ordersMapper.updateByPrimaryKeySelective(orders);
+                    returnObject=new ReturnObject<>(ResponseCode.OK);
+                }
             }
             else
             {
-                orders.setBeDeleted((byte) 1);
-                ordersMapper.updateByPrimaryKeySelective(orders);
-                returnObject=new ReturnObject<>(ResponseCode.OK);
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
+
         }
         return returnObject;
     }
 
-    public ReturnObject putOrderIdConfirm(Long id)
+    public ReturnObject putOrderIdConfirm(Long user_id,Long id)
     {
         ReturnObject returnObject = null;
         OrdersExample ordersExample=new OrdersExample();
         OrdersExample.Criteria criteria=ordersExample.createCriteria();
         criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(ordersExample);
-
+        if (list==null||list.size()==0)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         for(Orders orders:list)
         {
-            if(!orders.getState().equals((byte)2))
+            if(orders.getCustomerId().equals(user_id))
             {
-                //API中写的是800 这里给到的状态码是801
-                returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                if(!orders.getState().equals((byte)2))
+                {
+                    //API中写的是800 这里给到的状态码是801
+                    returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                }
+                else
+                {
+                    //待收货状态下
+                    orders.setConfirmTime(LocalDateTime.now());
+                    orders.setState((byte)3);
+                    ordersMapper.updateByPrimaryKeySelective(orders);
+                    returnObject=new ReturnObject<>(ResponseCode.OK);
+                }
             }
             else
             {
-                //待收货状态下
-                orders.setConfirmTime(LocalDateTime.now());
-                orders.setState((byte)3);
-                ordersMapper.updateByPrimaryKeySelective(orders);
-                returnObject=new ReturnObject<>(ResponseCode.OK);
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
         }
         return returnObject;
@@ -378,35 +417,44 @@ public class OrderModelDao {
     * @Author: yansong chen
     * @Date: 2020-12-16 22:11
     */
-    public ReturnObject PostGroupon_Normal(Long id)
+    public ReturnObject PostGroupon_Normal(Long user_id,Long id)
     {
         ReturnObject returnObject=null;
         OrdersExample ordersExample=new OrdersExample();
         OrdersExample.Criteria criteria=ordersExample.createCriteria();
         criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(ordersExample);
-
+        if (list==null||list.size()==0)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         for(Orders orders:list)
         {
-
-            Byte i=1;//待付款状态
-
-            if(orders.getState().equals(i))
+            if(orders.getCustomerId().equals(user_id))
             {
-                //API中写的是800 这里给到的状态码是801
-                returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                Byte i=1;//待付款状态
+
+                if(orders.getState().equals(i))
+                {
+                    //API中写的是800 这里给到的状态码是801
+                    returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                }
+                else
+                {
+                    orders.setOrderType(ORDER_TYPE_NORMAL);
+                    ordersMapper.updateByPrimaryKeySelective(orders);
+                    returnObject=new ReturnObject<>(ResponseCode.OK);
+                }
             }
             else
             {
-                orders.setOrderType(ORDER_TYPE_NORMAL);
-                ordersMapper.updateByPrimaryKeySelective(orders);
-                returnObject=new ReturnObject<>(ResponseCode.OK);
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
         }
         return returnObject;
     }
 
-    public ReturnObject GetShopOrderList(Long authorization, Long shopId,
+    public ReturnObject GetShopOrderList(Long authorization, Long shopId,Long customerId,
                                          String orderSn,String beginTime,String endTime,
                                          int page,int pageSize)
     {
@@ -425,7 +473,13 @@ public class OrderModelDao {
         if (list==null||list.isEmpty())
         {
             logger.info("shopdetailtest33333");
-            return new ReturnObject<>(ResponseCode.OK);
+            OrderListBo orderListModel=new OrderListBo();
+            orderListModel.setPage(page);
+            orderListModel.setPages(1);
+            orderListModel.setPageSize(pageSize);
+            orderListModel.setTotal(0);
+            orderListModel.setOrderListModelItems(new ArrayList<>());
+            return new ReturnObject<>(orderListModel);
         }
         else
         {
@@ -436,6 +490,18 @@ public class OrderModelDao {
                 while(iterator1.hasNext()){
                     Orders orders = iterator1.next();
                     if (!orders.getOrderSn().equals(orderSn))
+                    {
+                        iterator1.remove();
+                    }
+                }
+            }
+            //如果指定顾客id
+            if(customerId!=null)
+            {
+                Iterator<Orders> iterator1 = list.iterator();
+                while(iterator1.hasNext()){
+                    Orders orders = iterator1.next();
+                    if (!orders.getCustomerId().equals(customerId))
                     {
                         iterator1.remove();
                     }
@@ -510,13 +576,24 @@ public class OrderModelDao {
         OrdersExample example=new OrdersExample();
         OrdersExample.Criteria criteria;
         criteria=example.createCriteria();
-        criteria.andOrderSnEqualTo(String.valueOf(id));
+        criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
+        if (list==null||list.size()==0)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         for(Orders orders:list)
         {
-            orders.setMessage(message.getMessage());
-            int i=ordersMapper.updateByPrimaryKeySelective(orders);
-            System.out.println(message.getMessage()+"   "+i);
+            if(orders.getShopId().equals(shopid))
+            {
+                orders.setMessage(message.getMessage());
+                int i=ordersMapper.updateByPrimaryKeySelective(orders);
+                System.out.println(message.getMessage()+"   i:"+i);
+            }
+            else
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            }
         }
         returnObject=new ReturnObject<>(ResponseCode.OK);
         return returnObject;
@@ -529,12 +606,12 @@ public class OrderModelDao {
         OrdersExample.Criteria criteria=example.createCriteria();
         criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
-
         OrderDetailBo orderDetailBo = null;
 
-        if(list==null)
+        if(list==null||list.size()==0)
         {
-            return new ReturnObject<>(ResponseCode.OK);
+            logger.info("getshopdetail"+String.valueOf(list.size()));
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
         }
         for(Orders orders:list)
         {
@@ -565,7 +642,7 @@ public class OrderModelDao {
             else
             {
                 //订单不属于这个商店
-                returnObject=new ReturnObject<>(ResponseCode.OK);
+                returnObject=new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
         }
         return returnObject;
@@ -576,30 +653,43 @@ public class OrderModelDao {
         ReturnObject returnObject = null;
         OrdersExample example=new OrdersExample();
         OrdersExample.Criteria criteria=example.createCriteria();
-        criteria.andOrderSnEqualTo(String.valueOf(id));
+        criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
-
+        if(list==null||list.size()==0)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         for(Orders orders:list)
         {
-            //缺少一个判断是否为商店的订单的过程
-
-            int i=1;//禁止状态
-
-            if(orders.getState()==i)
+            if (orders.getShopId().equals(shopId))
             {
-                //API中写的是800 这里给到的状态码是801
-                returnObject=new ReturnObject(ResponseCode.ORDER_STATENOTALLOW);
+                Byte i=11;//新订单子状态状态
+                if(!(orders.getSubstate().equals(i)||orders.getSubstate().equals((byte)12)
+                    ||orders.getSubstate().equals((byte)22)||orders.getSubstate().equals((byte)23)))
+                {
+                    //API中写的是800 这里给到的状态码是801
+                    returnObject=new ReturnObject(ResponseCode.ORDER_STATENOTALLOW);
+                }
+                else
+                {
+                    if(orders.getState().equals((byte)1))
+                    {
+                        //orders.setOrderType(ORDER_TYPE_NORMAL);
+                        //设置状态已取消
+                        orders.setState((byte)4);
+                        ordersMapper.updateByPrimaryKeySelective(orders);
+                        returnObject=new ReturnObject(ResponseCode.OK);
+                    }
+                    else
+                    {
+                        returnObject=new ReturnObject(ResponseCode.ORDER_STATENOTALLOW);
+                    }
+                }
             }
             else
             {
-                orders.setOrderType(ORDER_TYPE_NORMAL);
-                ordersMapper.updateByPrimaryKeySelective(orders);
-                returnObject=new ReturnObject(ResponseCode.OK);
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
-        }
-        if(returnObject==null)
-        {
-            returnObject=new ReturnObject(ResponseCode.OK);
         }
         return returnObject;
     }
@@ -611,29 +701,38 @@ public class OrderModelDao {
         OrdersExample.Criteria criteria=example.createCriteria();
         criteria.andIdEqualTo(id);
         List<Orders> list=ordersMapper.selectByExample(example);
-
+        if(list==null||list.size()==0)
+        {
+            return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+        }
         for (Orders orders:list)
         {
             logger.info(orders.getState().toString());
-            if(orders.getState().equals((byte)2)&&orders.getSubstate().equals((byte)21))
+            if(orders.getShopId().equals(shopId))
             {
-                //将订单子状态设置为已发货
-                orders.setSubstate((byte)24);
-                //运单信息
-                orders.setShipmentSn(orderFreightSn.getFreightSn());
-                int i=ordersMapper.updateByPrimaryKeySelective(orders);
-                logger.info("orderSN:"+orders.getOrderSn()+"  yes"+i);
-                System.out.println("orderSN:"+orders.getOrderSn());
-                returnObject=new ReturnObject<>(ResponseCode.OK);
-                break;
+                if (orders.getState().equals((byte)2)&&orders.getSubstate().equals((byte)21))
+                {
+                    //将订单子状态设置为已发货
+                    orders.setSubstate((byte)24);
+                    //运单信息
+                    orders.setShipmentSn(orderFreightSn.getFreightSn());
+                    int i=ordersMapper.updateByPrimaryKeySelective(orders);
+                    logger.info("orderSN:"+orders.getOrderSn()+"  yes"+i);
+                    System.out.println("orderSN:"+orders.getOrderSn());
+                    returnObject=new ReturnObject<>(ResponseCode.OK);
+                    break;
+                }
+                else
+                {
+                    logger.info("orderSN:"+orders.getOrderSn()+"no");
+                    returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                }
             }
             else
             {
-                logger.info("orderSN:"+orders.getOrderSn()+"no");
-                returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_OUTSCOPE);
             }
         }
-
         return returnObject;
     }
 
@@ -663,5 +762,59 @@ public class OrderModelDao {
             i= orders.getCustomerId();
         }
         return i;
+    }
+
+    public Long GetUserIdByOrder_Item_Id(Long item_id){
+        OrderItemExample example=new OrderItemExample();
+        OrderItemExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(item_id);
+        List<OrderItem> list=orderItemMapper.selectByExample(example);
+        Long i=null;
+        for(OrderItem orderItem:list)
+        {
+            Long order_id=orderItem.getOrderId();
+            i=GetUserIdByOrderId(order_id);
+        }
+        return i;
+    }
+
+    public Byte GetStateByOrder_id(Long id)
+    {
+        OrdersExample example=new OrdersExample();
+        OrdersExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<Orders> list=ordersMapper.selectByExample(example);
+        Byte i = null;
+        for(Orders orders:list)
+        {
+            i=orders.getState();
+        }
+        return i;
+    }
+
+    public void SetState2_Substate12(Long id)
+    {
+        OrdersExample example=new OrdersExample();
+        OrdersExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<Orders> list=ordersMapper.selectByExample(example);
+        for(Orders orders:list)
+        {
+            orders.setState((byte)2);
+            orders.setSubstate((byte)21);
+        }
+    }
+
+    public Long GetTotalPriceByOrderId(Long id) {
+        OrdersExample example=new OrdersExample();
+        OrdersExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<Orders> list=ordersMapper.selectByExample(example);
+        Long price=0L;
+        for(Orders orders:list)
+        {
+            price+=orders.getFreightPrice()-orders.getDiscountPrice()+orders.getOriginPrice();
+        }
+        return price;
     }
 }

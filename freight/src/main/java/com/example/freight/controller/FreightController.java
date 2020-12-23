@@ -1,12 +1,11 @@
 package com.example.freight.controller;
 
+import cn.edu.xmu.goods.client.IGoodsService;
 import cn.edu.xmu.ooad.annotation.Audit;
+import cn.edu.xmu.ooad.annotation.Depart;
 import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.model.VoObject;
-import cn.edu.xmu.ooad.util.Common;
-import cn.edu.xmu.ooad.util.ResponseCode;
-import cn.edu.xmu.ooad.util.ResponseUtil;
-import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.ooad.util.*;
 import com.alibaba.fastjson.JSON;
 import com.example.freight.model.po.FreightModelPo;
 import com.example.freight.model.vo.PieceFreightModelInfoVo;
@@ -16,8 +15,11 @@ import com.example.freight.model.vo.ItemVo;
 import com.example.freight.model.vo.WeightFreightModelInfoVo;
 import com.example.freight.service.FreightService;
 import com.example.freight.service.IFreightModelService;
+import com.example.orderservice.OrderServiceDubbo;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.*;
+import net.bytebuddy.asm.Advice;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,9 +51,9 @@ public class FreightController {
     @Autowired
     FreightService freightService;
 
-    @Autowired(required = false)
-    IFreightModelService iFreightModelService;
 
+    @DubboReference(version = "0.0.1-SNAPSHOT")
+    IGoodsService iGooosService;
     //此处需要有一个删除商品关联的运费模板信息的dubbo服务
 
 
@@ -75,7 +77,11 @@ public class FreightController {
     @Audit
     @PostMapping("shops/{shopId}/freightmodels/{id}/default")
     @ResponseBody
-    public Object setDefaultFreightModel(@PathVariable Long shopId, @PathVariable Long id,HttpServletResponse httpServletResponse) {
+    public Object setDefaultFreightModel(@Depart Long jwtShopId,@PathVariable Long shopId, @PathVariable Long id,HttpServletResponse httpServletResponse) {
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
         logger.debug("setDefaultFreightModel shopid = " + shopId + " id = " + id);
         ReturnObject returnObject = freightService.setDefaultFreightModel(shopId, id);
         if (returnObject.getCode() == ResponseCode.OK) {
@@ -169,8 +175,12 @@ public class FreightController {
 
     @Audit
     @PutMapping("/shops/{shopId}/freightmodels/{id}")
-    public Object modifyFreightModel(@PathVariable Long shopId,@PathVariable Long id,@RequestBody FreightModelInfoVo vo,HttpServletResponse httpServletResponse)
+    public Object modifyFreightModel(@Depart Long jwtShopId,@PathVariable Long shopId,@PathVariable Long id,@RequestBody FreightModelInfoVo vo,HttpServletResponse httpServletResponse)
     {
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
         ReturnObject returnObject = freightService.modifyFreightModel(shopId,id,vo);
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
@@ -286,17 +296,24 @@ public class FreightController {
     @Audit
     @PostMapping("region/{rid}/price")
     // todo:商品模块拿sku信息
-    public Object getFreight(@PathVariable Long rid, @RequestBody List<ItemVo> items)
+    public Object getFreight(@PathVariable Long rid, @RequestBody List<ItemVo> items,HttpServletResponse httpServletResponse)
     {
-        logger.debug("compute freight: region id: " +rid + " items = " + items);
+        logger.info("compute freight: region id: " +rid + " items = " + items);
+        List<Long> freightModelIds = new ArrayList<>();
         List<FreightModelBo> freightModelBoList = new ArrayList<>();
-        List<Integer> skuWeight = new ArrayList<>();
+        List<Long> skuWeight = new ArrayList<>();
         for(ItemVo itemVo:items)
         {
-            freightModelBoList.add(iFreightModelService.getFreightIdBySkuId(itemVo.getSkuId()));
-            skuWeight.add(iFreightModelService.getWeightBySkuId(itemVo.getSkuId()));
+            //logger.info(orderServiceDubbo.GetShopIdByOrderId(itemVo.getSkuId())+" here");
+            freightModelIds.add(iGooosService.getFreightModelIdBySku(itemVo.getSkuId()));
+            skuWeight.add(iGooosService.getGoodWeightBySku(itemVo.getSkuId()));
         }
-        return Common.getRetObject(freightService.getFreight(freightModelBoList,skuWeight,items,rid));
+        logger.info("ready to compute");
+        /* 传入每个商品的运费模板id，sku重量，vo信息，抵达区域 */
+        httpServletResponse.setStatus(HttpStatus.CREATED.value());
+        ReturnObject returnObject = freightService.getFreight(freightModelIds,skuWeight,items,rid);
+        logger.info(JacksonUtil.toJson(returnObject));
+        return Common.getRetObject(returnObject);
     }
 
 
@@ -401,8 +418,13 @@ public class FreightController {
     @Audit
     @PutMapping("shops/{shopId}/pieceItems/{id}")
     @ResponseBody
-    public Object putPieceItems(@PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody PieceFreightModelInfoVo pieceFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
+    public Object putPieceItems(@Depart Long jwtShopId, @PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody PieceFreightModelInfoVo pieceFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
     {
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
+
         logger.debug("putPieceItems shopId:" + shopId + " id = " + id);
         if (result.hasErrors())
         {
@@ -482,8 +504,14 @@ public class FreightController {
     @Audit
     @PutMapping("shops/{shopId}/weightItems/{id}")
     @ResponseBody
-    public Object putWeightItems(@PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody WeightFreightModelInfoVo weightFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
+    public Object putWeightItems(@Depart Long jwtShopId,@PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody WeightFreightModelInfoVo weightFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
     {
+        logger.info("jwtShopId shopId "+jwtShopId+" "+shopId);
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
+
         logger.debug("putWeightItems shopId:" + shopId + " id = " + id);
         if (result.hasErrors())
         {

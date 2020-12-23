@@ -2,9 +2,11 @@ package com.example.payment.service;
 
 import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.payment.dao.PaymentDao;
+import com.example.payment.model.po.PaymentPo;
 import com.example.payment.model.vo.PaymentInfoVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PaymentService {
@@ -44,6 +46,7 @@ public class PaymentService {
      * @Author: alex101
      * @Date: 2020/12/16
      */
+    @Transactional
     public ReturnObject createPayment(Long id, PaymentInfoVo vo) {
         return paymentDao.createPayment(id, vo);
     }
@@ -70,5 +73,25 @@ public class PaymentService {
      */
     public ReturnObject getPaymentsByAftersaleId(Long id) { return paymentDao.getPaymentsByAftersaleId(id); }
 
+
+    @Transactional
+    public ReturnObject createAftersalePayment(Long id, PaymentInfoVo vo) {
+        return paymentDao.createAftersalePayment(id, vo);
+    }
+    @Transactional
+    public ReturnObject createPaymentByShop(Long id,Long refundAmount)
+    {
+        return paymentDao.createPaymentByShop(id,refundAmount);
+    }
+    @Transactional
+    public ReturnObject createAftersalePaymentByShop(Long id,Long refundAmount)
+    {
+        return paymentDao.createAftersalePaymentByShop(id,refundAmount);
+    }
+
+    public ReturnObject getPaymentPoById(Long paymentId)
+    {
+        return paymentDao.getPaymentById(paymentId);
+    }
 
 }

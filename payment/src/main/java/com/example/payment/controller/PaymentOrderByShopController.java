@@ -1,18 +1,24 @@
 package com.example.payment.controller;
 
+import cn.edu.xmu.goods.client.IGoodsService;
 import cn.edu.xmu.ooad.annotation.Audit;
+import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.util.Common;
 import cn.edu.xmu.ooad.util.JacksonUtil;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.oomall.other.service.IAftersaleService;
 import com.example.orderservice.OrderServiceDubbo;
+import com.example.payment.PaymentApplication;
 import com.example.payment.dao.PaymentDao;
 import com.example.payment.dao.RefundDao;
 import com.example.payment.model.bo.PaymentBo;
+import com.example.payment.model.po.PaymentPo;
 import com.example.payment.model.vo.AmountVo;
 import com.example.payment.model.vo.PaymentInfoVo;
 import com.example.payment.service.PaymentService;
 import com.example.payment.service.RefundService;
+import com.mysql.cj.jdbc.jmx.LoadBalanceConnectionGroupManager;
 import io.swagger.annotations.*;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.slf4j.Logger;
@@ -26,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "payment/shops",produces = "application/json;charset=UTF-8")
+@RequestMapping(value = "/shops",produces = "application/json;charset=UTF-8")
 public class PaymentOrderByShopController {
 
     @Autowired
@@ -36,8 +42,12 @@ public class PaymentOrderByShopController {
     @Autowired
     HttpServletResponse httpServletResponse;
 
-    @DubboReference
+    @DubboReference(registry = "order")
     OrderServiceDubbo orderServiceDubbo;
+
+    @DubboReference(registry = "other")
+    IAftersaleService iAftersaleService;
+
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentOrderByShopController.class);
 
@@ -116,6 +126,13 @@ public class PaymentOrderByShopController {
                                                     @PathVariable("id")long aftersaleId) {
         /* 先根据aftersalfeId查出shopId */
         /* 与传入的shopId一致才可放行 */
+
+        ReturnObject userId = iAftersaleService.findUserIdbyAftersaleId(aftersaleId);
+        if(userId.getData()==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
 
         ReturnObject returnObject = paymentService.getPaymentsByAftersaleId(aftersaleId);
         logger.info(JacksonUtil.toJson(returnObject));
@@ -202,85 +219,74 @@ public class PaymentOrderByShopController {
      */
     @Audit
     @GetMapping("{shopId}/aftersales/{id}/refunds")
-    public Object getRefundsByAftersaleIdAndShopId(@PathVariable("shopId") Long shopId, @PathVariable("id") Long aftersaleId)
+    public Object getRefundsByAftersaleIdAndShopId(@PathVariable("shopId") Long shopId, @PathVariable("id") Long aftersaleId, @LoginUser Long userid)
     {
         /* 先根据aftersaleId查出shopId */
+        ReturnObject<Long> checkedShopId = iAftersaleService.findShopIdbyAftersaleId(aftersaleId);
+        //缺少一个根据orderItemId查userId的
+
+        /* 判空 */
+        if(checkedShopId.getData()==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
+
+
+
+
+        /* 验证权限 */
+
+        if(!shopId.equals(checkedShopId.getData()))
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            return Common.decorateReturnObject(returnObject);
+        }
+
+
         /* 与传入的shopId一致才可放行 */
         ReturnObject returnObject = refundService.getRefundsByAftersaleId(aftersaleId);
         if(returnObject.getCode() == ResponseCode.OK)
         {
-            System.out.println("ok");
             return Common.getListRetObject(returnObject);
-        }
-
-        if(returnObject.getCode()!=ResponseCode.RESOURCE_ID_NOTEXIST)
-        {
-
-            return Common.getListRetObject(returnObject);
-        }
-
-        else
-        {
-            System.out.println("fail");
-            logger.info(JacksonUtil.toJson(returnObject));
+        }else {
             return Common.decorateReturnObject(returnObject);
         }
     }
 
+    @PostMapping("{shopId}/payments/{id}/refund")
+    public Object createPaymentsForRefundByShop(@PathVariable long shopId,
+                                                @PathVariable("id") long paymentId,
+                                                @RequestBody AmountVo vo)
+    {
 
-    /** 
-    * @Description: todo:缺少dubbo 
-    * @Param: [shopId, orderId] 
-    * @return: java.lang.Object 
-    * @Author: alex101
-    * @Date: 2020/12/22 
-    */
-//    @GetMapping("{shopId}/orders/{id}/refunds")
-//    //比如要找id为9的订单的退款信息，这个订单的shopid是2，那么只有当访问路径中的shopid为2的时候才能访问，否则会提示无权访问
-//    public Object getRefundsByOrderIdAndShopId(@PathVariable("shopId") long shopId,
-//                                               @PathVariable("id") long orderId)
-//    {
-//        ReturnObject returnObject  = refundService.getRefundsByOrderId(orderId);
-//        if(returnObject.getCode()==ResponseCode.OK)
-//        {
-//            return Common.getListRetObject(returnObject);
-//        }else {
-//            return Common.decorateReturnObject(returnObject);
-//        }
-//    }
-//
-//
-//
-//    @GetMapping("{shopId}/aftersales/{id}/payments")
-//    public Object getPaymentsByAftersaleIdAndShopId(@PathVariable("shopId")long shopId,
-//                                                    @PathVariable("id")long aftersaleId)
-//    {
-//        //调其他模块的关于aftersale表的方法，要通过aftersale表中的一个id找aftersale的shopid
-//        long shopIdGettingFromAfterSale=shopId;
-//        if(shopId!=shopIdGettingFromAfterSale)
-//        {
-//            return ResponseUtil.fail(ResponseCode.RESOURCE_ID_OUTSCOPE);//无权访问
-//        }
-//        return ResponseUtil.ok(paymentDao.getPaymentsByAftersaleId(aftersaleId));
-//    }
-//
-//    @GetMapping("{shopId}/aftersales/{id}/refund")
-//    public Object getRefundsAboutAftersalesByOrderIdAndShopId(@PathVariable("shopId") long shopId,
-//                                                              @PathVariable("id")long aftersaleId)
-//    {
-//        //调其他模块的关于aftersale表的方法，要通过aftersale表中的一个id找aftersale的shopid
-//        long shopIdGettingFromAfterSale=shopId;//模拟找aftersaleid所对应的shopid
-//        if(shopId!=shopIdGettingFromAfterSale)
-//        {
-//            return ResponseUtil.fail(ResponseCode.RESOURCE_ID_OUTSCOPE);//无权访问
-//        }
-//        List<Payment>paymentList=paymentDao.getPaymentsByAftersaleId(aftersaleId);
-//        List<Refund>refundList=new ArrayList<>();
-//        for(Payment p:paymentList)
-//        {
-//            List<Refund> temp=refundDao.getRefundsByPaymentId(p.getId());
-//            refundList.addAll(temp);
-//        }
-//        return ResponseUtil.ok(refundList);
-//    }
+        PaymentBo paymentBo = (PaymentBo) paymentService.getPaymentPoById(paymentId).getData();
+        if(paymentBo!=null && paymentBo.getOrderId()!=null)//说明这个payment对应着一个order
+        {
+            //通过order，根据orderid查shopid
+            long orderidByPayment=paymentBo.getOrderId();
+            long shopidByOrderService=orderServiceDubbo.GetShopIdByOrderId(orderidByPayment);
+            if(shopId!=shopidByOrderService)
+            {
+                return Common.decorateReturnObject(new ReturnObject());
+            }
+            return Common.getRetObject(paymentService.createPaymentByShop(paymentId,vo.getAmount()));
+        }
+        else if(paymentBo.getAftersaleId()!=null)//说明这个payment对应着一个aftersale
+        {
+            Long aftersaleidbypayment=paymentBo.getAftersaleId();
+            Long aftersaleidByAftersaleService=paymentBo.getAftersaleId();
+            if(!aftersaleidbypayment.equals(aftersaleidByAftersaleService))
+            {
+                return Common.decorateReturnObject(new ReturnObject());
+            }
+            return Common.getRetObject(paymentService.createAftersalePaymentByShop(paymentId,vo.getAmount()));
+        }
+        else //这个支付单出了问题
+        {
+            return Common.decorateReturnObject(new ReturnObject());
+
+        }
+    }
+
 }

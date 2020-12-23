@@ -75,7 +75,7 @@ public class PublicFreightControllerTest {
     @Test
     public void changeFreightModel1() throws Exception
     {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 295l, 100);
         System.out.println(mallGate);
         String freightJson = "{\"name\": \"freightModeTest\",\"unit\": 90}";
         byte[] responseString =
@@ -92,7 +92,7 @@ public class PublicFreightControllerTest {
 
 
     /**
-     * 修改运费模板  路径上的shopId与Token中解析出来的不符 这应该是网关做的，暂时测试不过
+     * 修改运费模板  todo:路径上的shopId与Token中解析出来的不符 这应该是网关做的，暂时测试不过
      * @throws Exception
      */
     @Test
@@ -119,7 +119,7 @@ public class PublicFreightControllerTest {
     @Test
     public void changeFreightModel3() throws Exception
     {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 295l, 100);
         String freightJson = "{\"name\": \"freightModel2\",\"unit\": 100}";
         byte[] responseString =
                 manageClient.put().uri("/freight/shops/{shopId}/freightmodels/{id}",295,99999)
@@ -141,7 +141,7 @@ public class PublicFreightControllerTest {
     public void changePieceFreightModel1() throws Exception
     {
 
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 295l, 100);
         String freightJson = "{\n" +
                 "    \"firstItems\": 60,\n" +
                 "    \"firstItemsPrice\": 22,\n" +
@@ -163,7 +163,7 @@ public class PublicFreightControllerTest {
     }
 
     /**
-     * 修改件数运费模板 路径上的shopId与Token中解析出来的不符 网关负责的
+     * 修改件数运费模板 todo:路径上的shopId与Token中解析出来的不符 网关负责的
      * @throws Exception
      */
     @Test
@@ -190,7 +190,7 @@ public class PublicFreightControllerTest {
     @Test
     public void changePieceFreightModel3() throws Exception
     {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 295l, 100);
         String freightJson = "{\n" +
                 "    \"firstItems\": 60,\n" +
                 "    \"firstItemsPrice\": 22,\n" +
@@ -217,7 +217,7 @@ public class PublicFreightControllerTest {
     @Test
     public void changeWeightFreightModel1() throws Exception
     {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 295l, 100);
         String freightJson = "{\n" +
                 "    \"firstWeightFreight\": 519,\n" +
                 "    \"tenPrice\": 391,\n" +
@@ -243,7 +243,7 @@ public class PublicFreightControllerTest {
     @Test
     public void changeWeightFreightModel2() throws Exception
     {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 295l, 100);
         String freightJson = "{\n" +
                 "    \"firstWeightFreight\": 519,\n" +
                 "    \"tenPrice\": 391\n" +
@@ -275,7 +275,7 @@ public class PublicFreightControllerTest {
                 "    \"tenPrice\": 391\n" +
                 "}";
         byte[] responseString =
-                manageClient.put().uri("/shops/{shopId}/weightItems/{id}",295,55555)
+                manageClient.put().uri("/freight/shops/{shopId}/weightItems/{id}",295,55555)
                         .header("authorization",token)
                         .bodyValue(freightJson)
                         .exchange()
@@ -287,6 +287,8 @@ public class PublicFreightControllerTest {
 
     /**
      * 计算运费1
+     *
+     *
      * todo:需要到商品模块才能拿信息
      * @throws Exception
      */
@@ -295,7 +297,7 @@ public class PublicFreightControllerTest {
     public void calculateFreight1() throws Exception {
         String token = new JwtHelper().createToken(100L, 100l, 100);
         String json = "[{\"count\":6,\"skuId\":10000},{\"count\":2,\"skuId\":10001},{\"count\":1,\"skuId\":10002}]";
-        byte[] responseString = mallClient.post().uri("/region/2/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/2/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isCreated()
@@ -317,7 +319,7 @@ public class PublicFreightControllerTest {
     public void calculateFreight3() throws Exception {
         String token = new JwtHelper().createToken(100L, 100l, 100);
         String json = "[{\"count\":1,\"skuId\":10000},{\"count\":1,\"skuId\":10001},{\"count\":1,\"skuId\":10002}]";
-        byte[] responseString = mallClient.post().uri("/region/20001/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/20001/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isOk()
@@ -338,7 +340,7 @@ public class PublicFreightControllerTest {
 
         String token = null;
         String json = "[{\"count\":1,\"skuId\":10000},{\"count\":1,\"skuId\":10001},{\"count\":1,\"skuId\":10002}]";
-        byte[] responseString = mallClient.post().uri("/region/2/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/2/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isCreated()
@@ -412,7 +414,7 @@ public class PublicFreightControllerTest {
                 "  \"regionId\": 0\n" +
                 "}";
 
-        byte[] responseString = manageClient.post().uri("/shops/{shopId}/freightmodels/{id}/default",47012,47011)
+        byte[] responseString = manageClient.post().uri("/freight/shops/{shopId}/freightmodels/{id}/default",47012,47011)
                 .header("authorization", token)
                 .bodyValue(pieceFreightModelJson)
                 .exchange()
@@ -464,7 +466,7 @@ public class PublicFreightControllerTest {
                 "  \"firstItemsPrice\": 0,\n" +
                 "  \"regionId\": 0\n" +
                 "}";
-        byte[] responseString = manageClient.post().uri("/shops/{shopId}/freightmodels/{id}/pieceItems",47012,47011)
+        byte[] responseString = manageClient.post().uri("/freight/shops/{shopId}/freightmodels/{id}/pieceItems",47012,47011)
                 .header("authorization", token)
                 .bodyValue(pieceFreightModelJson)
                 .exchange()
@@ -483,7 +485,7 @@ public class PublicFreightControllerTest {
     public void calculateFreight() throws Exception {
         String token = new JwtHelper().createToken(200L, 100l, 50);
         String json = "[{\"count\":1,\"skuId\":1275}]";
-        byte[] responseString = mallClient.post().uri("/region/201/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/201/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isCreated()
@@ -505,7 +507,7 @@ public class PublicFreightControllerTest {
 
         String token = new JwtHelper().createToken(200L, 100l, 50);
         String json = "[{\"count\":1,\"skuId\":1275}]";
-        byte[] responseString = mallClient.post().uri("/region/54101/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/54101/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isOk()
@@ -697,7 +699,7 @@ public class PublicFreightControllerTest {
     @Test
     @Order(13)
     public void defineDefaultFreightModel() throws Exception {
-        String token = new JwtHelper().createToken(200L, 100l, 50);
+        String token = new JwtHelper().createToken(200L, 1l, 50);
         byte[] responseString = manageClient.post().uri("/freight/shops/1/freightmodels/200/default").header("authorization", token)
                 .exchange()
                 .expectStatus().isNotFound()
@@ -717,7 +719,7 @@ public class PublicFreightControllerTest {
     @Test
     @Order(14)
     public void defineDefaultFreightModel1() throws Exception {
-        String token = new JwtHelper().createToken(200L, 100l, 50);
+        String token = new JwtHelper().createToken(200L, 1l, 50);
         byte[] responseString = manageClient.post().uri("/freight/shops/1/freightmodels/22/default").header("authorization", token)
                 .exchange()
                 .expectStatus().isCreated()

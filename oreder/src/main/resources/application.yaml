@@ -13,7 +13,7 @@ dubbo:
     qos-accept-foreign-ip: false
   # 配置注册中心
   registry:
-    address: nacos://localhost:8848
+    address: nacos://172.16.2.151:8848
   # 设置协议-协议由提供方指定消费方被动接受
   protocol:
     name: dubbo
@@ -29,9 +29,9 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     #initialization-mode: always
     #name: order
-    url: jdbc:mysql://localhost:3306/oomall_order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    url: jdbc:mysql://172.16.2.151:3306/oomall_order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
     username: root
-    password: alex20000211
+    password: ooad109mysql
     #schema: classpath:schema.sql
     #data: classpath:testdata.sql
     druid:

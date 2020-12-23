@@ -15,12 +15,17 @@ import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 
 /***
  * @author yansong chen
@@ -37,8 +42,8 @@ public class Ordercontroller {
     @Autowired
     OrderService orderService;
 
-    @Autowired
-    private HttpServletResponse httpServletResponse;
+/*    @Autowired
+    private HttpServletResponse httpServletResponse;*/
     /**
     * @Description:
     * @Param: [re]
@@ -85,11 +90,36 @@ public class Ordercontroller {
     @ResponseBody
     public Object getOrderList(@LoginUser @ApiIgnore Long id,
                                String orderSn, Integer state,
-                               String beginTime,
-                               String endTime,
+                               @Validated String beginTime,
+                               @Validated String endTime,
                                @RequestParam(required = false,defaultValue = "1") Integer page,
-                               @RequestParam(required = false,defaultValue = "10")Integer pageSize)
+                               @RequestParam(required = false,defaultValue = "10")Integer pageSize,
+                               HttpServletResponse httpServletResponse)
     {
+        String format = "yyyy-MM-dd HH:mm:ss";
+        boolean t1=true,t2 = true;
+        DateTimeFormatter ldt = DateTimeFormatter.ofPattern(format.replace("y", "u")).withResolverStyle(ResolverStyle.STRICT);
+        try {
+            if(beginTime!=null)
+            {
+                t1=LocalDate.parse(beginTime, ldt)==null?false:true;
+            }
+            if(endTime!=null)
+            {
+                t2=LocalDate.parse(endTime, ldt)==null?false:true;
+            }
+        } catch (Exception e) {
+            t1=false;
+            t2=false;
+        }
+        if(!(t1&&t2))
+        {
+            ReturnObject returnObject  = new ReturnObject(ResponseCode.FIELD_NOTVALID);
+            httpServletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return Common.decorateReturnObject(returnObject);
+            //return Common.processFieldErrors(result, httpServletResponse);
+        }
+
         ReturnObject returnObject;
         returnObject=orderService.GetListOrder(id,orderSn,state,beginTime,endTime,page,pageSize);
         if (returnObject.getCode() == ResponseCode.OK) {
@@ -111,7 +141,7 @@ public class Ordercontroller {
     @Audit
     @PostMapping("/orders")
     public Object postOrder(@LoginUser Long authorization, @RequestBody NewOrderVO newOrderVO,
-                            BindingResult bindingResult)
+                            BindingResult bindingResult,HttpServletResponse httpServletResponse)
     {
 
         //校验前端数据
@@ -147,14 +177,23 @@ public class Ordercontroller {
     @Audit
     @GetMapping("/orders/{id}")
     @ResponseBody
-    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") Long id)
+    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") Long id,HttpServletResponse httpServletResponse)
     {
         logger.debug("User_id:"+authorization+" Order_id:"+id);
         ReturnObject returnObject=orderService.GetOrderDetail(authorization,id);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        } else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -170,13 +209,29 @@ public class Ordercontroller {
     })
     @Audit
     @PutMapping("/orders/{id}")
-    public Object modifyOrder(@LoginUser Long authorization, @PathVariable int id,@RequestBody modifyOrder order)
+    public Object modifyOrder(@LoginUser Long authorization, @PathVariable Long id,@Validated @RequestBody modifyOrder order,BindingResult result,HttpServletResponse httpServletResponse)
     {
-        ReturnObject returnObject=orderService.modifyOrder(id,order);
+        if(result.hasErrors())
+        {
+            return Common.processFieldErrors(result, httpServletResponse);
+        }
+
+        ReturnObject returnObject=orderService.modifyOrder(authorization,id,order);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -192,13 +247,24 @@ public class Ordercontroller {
     })
     @Audit
     @PutMapping("/orders/{id}/confirm")
-    public Object putOrderIdConfirm(@LoginUser Long authorization,@PathVariable Long id)
+    public Object putOrderIdConfirm(@LoginUser Long authorization,@PathVariable Long id,HttpServletResponse httpServletResponse)
     {
-        ReturnObject returnObject=orderService.putOrderIdConfirm(id);
+        ReturnObject returnObject=orderService.putOrderIdConfirm(authorization,id);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -215,13 +281,24 @@ public class Ordercontroller {
     })
     @Audit
     @DeleteMapping("/orders/{id}")
-    public Object DelOrder(@LoginUser Long authorization,@PathVariable Long id)
+    public Object DelOrder(@LoginUser Long authorization,@PathVariable Long id,HttpServletResponse httpServletResponse)
     {
         ReturnObject returnObject=orderService.DelOrder(authorization,id);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -237,13 +314,24 @@ public class Ordercontroller {
     })
     @Audit
     @PostMapping("/orders/{id}/groupon-normal")
-    public Object PostGroupon_Normal(@PathVariable Long id)
+    public Object PostGroupon_Normal(@LoginUser Long use_id,@PathVariable Long id,HttpServletResponse httpServletResponse)
     {
-        ReturnObject returnObject=orderService.PostGroupon_Normal(id);
+        ReturnObject returnObject=orderService.PostGroupon_Normal(use_id,id);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -267,15 +355,51 @@ public class Ordercontroller {
     @ResponseBody
     public Object GetShopOrderList(@LoginUser Long authorization,
                                    @PathVariable("shopId") Long shopId,
-                                   String orderSn,String beginTime,String endTime,
+                                   Long customerId,String orderSn,String beginTime,String endTime,
                                    @RequestParam(required = false,defaultValue = "1")int page,
-                                   @RequestParam(required = false,defaultValue = "10")int pageSize)
+                                   @RequestParam(required = false,defaultValue = "10")int pageSize,
+                                   HttpServletResponse httpServletResponse)
     {
-        ReturnObject returnObject=orderService.GetShopOrderList(authorization,shopId,orderSn,beginTime,endTime,page,pageSize);
+        String format = "yyyy-MM-dd HH:mm:ss";
+        boolean t1=true,t2 = true;
+        DateTimeFormatter ldt = DateTimeFormatter.ofPattern(format.replace("y", "u")).withResolverStyle(ResolverStyle.STRICT);
+        try {
+            if(beginTime!=null)
+            {
+                t1=LocalDate.parse(beginTime, ldt)==null?false:true;
+            }
+            if(endTime!=null)
+            {
+                t2=LocalDate.parse(endTime, ldt)==null?false:true;
+            }
+        } catch (Exception e) {
+            t1=false;
+            t2=false;
+        }
+        if(!(t1&&t2))
+        {
+            ReturnObject returnObject  = new ReturnObject(ResponseCode.FIELD_NOTVALID);
+            httpServletResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            return Common.decorateReturnObject(returnObject);
+            //return Common.processFieldErrors(result, httpServletResponse);
+        }
+
+        ReturnObject returnObject=orderService.GetShopOrderList(authorization,shopId,customerId,orderSn,beginTime,endTime,page,pageSize);
         logger.info("get shop detail "+returnObject.getCode());
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -296,13 +420,25 @@ public class Ordercontroller {
     public Object PutOrderMessage(@LoginUser Long authorization,
                                   @PathVariable("shopId") Long shopId,
                                   @PathVariable("id") Long id,
-                                  @RequestBody OrderMessage message)
+                                  @RequestBody OrderMessage message,
+                                  HttpServletResponse httpServletResponse)
     {
         ReturnObject returnObject=orderService.PutOrderMessage(shopId,id,message);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -321,13 +457,25 @@ public class Ordercontroller {
     @ResponseBody
     public Object GetShopOrderDetail(@LoginUser Long authorization,
                                      @PathVariable Long shopId,
-                                     @PathVariable Long id)
+                                     @PathVariable Long id,
+                                     HttpServletResponse httpServletResponse)
     {
         ReturnObject returnObject=orderService.GetShopOrderDetail(authorization,shopId,id);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }
@@ -346,13 +494,25 @@ public class Ordercontroller {
     @DeleteMapping("/shops/{shopId}/orders/{id}")
     public Object DelShopOrder(@LoginUser Long authorization,
                                @PathVariable Long shopId,
-                               @PathVariable Long id)
+                               @PathVariable Long id,
+                               HttpServletResponse httpServletResponse)
     {
         ReturnObject returnObject=orderService.DelShopOrder(shopId,id);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
-        } else {
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_NOTEXIST)
+        {
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else if (returnObject.getCode()==ResponseCode.RESOURCE_ID_OUTSCOPE)
+        {
+            httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            return Common.decorateReturnObject(returnObject);
+        }
+        else {
             return Common.decorateReturnObject(returnObject);
         }
     }

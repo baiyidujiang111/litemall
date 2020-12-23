@@ -31,10 +31,10 @@ import java.nio.charset.StandardCharsets;
 public class publicPaymentControllerTest
 {
     @Value("${public-test.managementgate}")
-    private String managementGate="localhost:8081";
+    private String managementGate="47.110.147.122:18089";
 
     @Value("${public-test.mallgate}")
-    private String mallGate="localhost:8081";
+    private String mallGate="47.110.147.122:18089";
 
     private WebTestClient manageClient;
 
@@ -61,7 +61,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void getRefundTest1() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(1L, 100l, 1000);
         byte[] responseString =
                 mallClient.get().uri("/payment/aftersales/{id}/refunds",1)
                         .header("authorization", token)
@@ -91,12 +91,12 @@ public class publicPaymentControllerTest
                         .getResponseBody();
     }
 
-    /** todo:需要其他模块dubbo
+    /** todo:需要其他模块dubbo,应该已修正
      * 通过aftersaleId查找refund  orderId不属于Token解析出来的userId
      */
     @Test
     public void getRefundTest3() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 100l, 10000);
         byte[] responseString =
                 mallClient.get().uri("/payment/aftersales/{id}/refunds",295)
                         .header("authorization", token)
@@ -149,7 +149,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void getRefundTest6() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 100l, 1000);
         byte[] responseString =
                 mallClient.get().uri("/payment/orders/{id}/refunds",2)
                         .header("authorization", token)
@@ -162,12 +162,12 @@ public class publicPaymentControllerTest
 
     }
 
-    /** todo:需要其他模块接口
+    /** todo:好像和底下什么测试冲突
      * 通过aftersaleId和shopId查找refund  通过aftersaleId找shopId 返回的shopId与路径上的shopId不符
      */
     @Test
     public void getRefundTest7() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 100l, 1000);
         byte[] responseString =
                 manageClient.get().uri("/payment/shops/{shopId}/aftersales/{id}/refunds",666666,1)
                         .header("authorization", token)
@@ -272,7 +272,7 @@ public class publicPaymentControllerTest
     public void getPaymentState() throws Exception{
         String token = new JwtHelper().createToken(100L, 100l, 100);
         byte[] responseString =
-                mallClient.get().uri("/payment/payments/states")
+                mallClient.get().uri("payment/payments/states")
                         .header("authorization", token)
                         .exchange()
                         .expectStatus().isOk()
@@ -436,7 +436,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void getAfterSalePaymentTest1() throws Exception {
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(1L, 100l, 100);
         byte[] responseString = mallClient.get().uri("/payment/aftersales/{id}/payments",1L)
                 .header("authorization", token)
                 .exchange()
@@ -491,7 +491,7 @@ public class publicPaymentControllerTest
     // todo 修改 json 字段, 标准api 中为 aftersaleId 而非 afterSaleId
     public void shopGetOrderPayment() throws Exception {
         // depart = 7L
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 100l, 1000);
         byte[] responseBytes = manageClient
                 .get()
                 .uri("/payment/shops/7/orders/2203919/payments")
@@ -657,7 +657,7 @@ public class publicPaymentControllerTest
     @Test
     public void createPaymentNotAllow() throws Exception {
         // userId = 2668
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(2668L, 100l, 100);
         String body = "{\n" +
                 "  \"price\": 9,\n" +
                 "  \"paymentPattern\": \"002\"\n" +
@@ -777,6 +777,7 @@ public class publicPaymentControllerTest
     /**
      * todo:需要到售后服务去查表
      * 管理员查询售后单的支付信息，失败
+     * 能查出来47011
      * @author 洪晓杰
      */
     @Test
@@ -860,7 +861,7 @@ public class publicPaymentControllerTest
      */
     @Test
     public void userQueryPaymentTest2() throws Exception{
-        String token = new JwtHelper().createToken(100L, 100l, 100);
+        String token = new JwtHelper().createToken(100L, 100l, 1000);
         byte[] responseString=mallClient.get().uri("/payment/orders/{id}/payments",48230)
                 .header("authorization", token)
                 .exchange()

@@ -63,23 +63,23 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject putOrderIdConfirm(Long id)
+    public ReturnObject putOrderIdConfirm(Long user_id,Long id)
     {
-        return orderModeldao.putOrderIdConfirm(id);
+        return orderModeldao.putOrderIdConfirm(user_id,id);
     }
 
     @Transactional
-    public ReturnObject PostGroupon_Normal(Long id)
+    public ReturnObject PostGroupon_Normal(Long user_id,Long id)
     {
-        return orderModeldao.PostGroupon_Normal(id);
+        return orderModeldao.PostGroupon_Normal(user_id,id);
     }
 
     @Transactional
-    public ReturnObject GetShopOrderList(Long authorization, Long shopId,
+    public ReturnObject GetShopOrderList(Long authorization, Long shopId,Long customerId,
                                          String orderSn,String beginTime,String endTime,
                                          int page,int pageSize)
     {
-        return orderModeldao.GetShopOrderList(authorization,shopId,orderSn,beginTime,endTime,page,pageSize);
+        return orderModeldao.GetShopOrderList(authorization,shopId,customerId,orderSn,beginTime,endTime,page,pageSize);
     }
 
     @Transactional
@@ -107,8 +107,8 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject modifyOrder(int id, modifyOrder modifyOrder)
+    public ReturnObject modifyOrder(Long user_id,Long id, modifyOrder modifyOrder)
     {
-        return orderModeldao.modifyOrder(id,modifyOrder);
+        return orderModeldao.modifyOrder(user_id,id,modifyOrder);
     }
 }
