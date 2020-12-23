@@ -15,4 +15,6 @@ public interface OrderServiceDubbo {
     Byte GetStateByOrder_id(Long id);
 
     void SetState2_Substate12(Long id);
+
+    Long GetTotalPriceByOrderId(Long id);
 }

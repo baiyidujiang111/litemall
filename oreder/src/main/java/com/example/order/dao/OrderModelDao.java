@@ -804,4 +804,17 @@ public class OrderModelDao {
             orders.setSubstate((byte)21);
         }
     }
+
+    public Long GetTotalPriceByOrderId(Long id) {
+        OrdersExample example=new OrdersExample();
+        OrdersExample.Criteria criteria=example.createCriteria();
+        criteria.andIdEqualTo(id);
+        List<Orders> list=ordersMapper.selectByExample(example);
+        Long price=0L;
+        for(Orders orders:list)
+        {
+            price+=orders.getFreightPrice()+orders.getDiscountPrice();
+        }
+        return price;
+    }
 }
