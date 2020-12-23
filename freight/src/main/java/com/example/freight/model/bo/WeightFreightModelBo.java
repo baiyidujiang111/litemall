@@ -59,6 +59,7 @@ public class WeightFreightModelBo implements VoObject,FreightModelDetail {
     @Override
     public Long getFreight(Long weight,Long count)
     {
+        /*
         Long weightSum = weight*count;
         Long freight = firstWeightFreight;
         if(weightSum > firstWeight && weightSum <= 10)
@@ -71,7 +72,19 @@ public class WeightFreightModelBo implements VoObject,FreightModelDetail {
             freight += (10-firstWeight)*tenPrice + 40*fiftyPrice + 50*hundredPrice + (weightSum - 100)*trihunPrice;
         else if(weightSum > 300)
             freight += (10-firstWeight)*tenPrice + 40*fiftyPrice + 50*hundredPrice + 200*trihunPrice + (weightSum-300)*abovePrice;
-
+        */
+        Long weightSum = weight*count;
+        Long freight = firstWeightFreight;
+        if(weightSum > firstWeight)
+            freight += tenPrice;
+        else if(weightSum > 10)
+            freight += fiftyPrice;
+        else if(weightSum > 50)
+            freight += hundredPrice;
+        else if(weightSum > 100)
+            freight += trihunPrice;
+        else if(weightSum > 300)
+            freight += abovePrice;
 
         return freight;
     }
