@@ -102,10 +102,12 @@ public class Ordercontroller {
         try {
             if(beginTime!=null)
             {
+                beginTime=beginTime.replaceAll("[a-zA-Z]"," ");
                 t1=LocalDate.parse(beginTime, ldt)==null?false:true;
             }
             if(endTime!=null)
             {
+                endTime=endTime.replaceAll("[a-zA-Z]"," ");
                 t2=LocalDate.parse(endTime, ldt)==null?false:true;
             }
         } catch (Exception e) {
@@ -366,10 +368,12 @@ public class Ordercontroller {
         try {
             if(beginTime!=null)
             {
+                beginTime=beginTime.replaceAll("[a-zA-Z]"," ");
                 t1=LocalDate.parse(beginTime, ldt)==null?false:true;
             }
             if(endTime!=null)
             {
+                endTime=endTime.replaceAll("[a-zA-Z]"," ");
                 t2=LocalDate.parse(endTime, ldt)==null?false:true;
             }
         } catch (Exception e) {
@@ -420,9 +424,14 @@ public class Ordercontroller {
     public Object PutOrderMessage(@LoginUser Long authorization,
                                   @PathVariable("shopId") Long shopId,
                                   @PathVariable("id") Long id,
-                                  @RequestBody OrderMessage message,
+                                  @RequestBody @Validated OrderMessage message,
+                                  BindingResult result,
                                   HttpServletResponse httpServletResponse)
     {
+        if(result.hasErrors())
+        {
+            return Common.processFieldErrors(result, httpServletResponse);
+        }
         ReturnObject returnObject=orderService.PutOrderMessage(shopId,id,message);
 
         if (returnObject.getCode() == ResponseCode.OK) {
