@@ -92,7 +92,7 @@ public class PublicFreightControllerTest {
 
 
     /**
-     * 修改运费模板  路径上的shopId与Token中解析出来的不符 这应该是网关做的，暂时测试不过
+     * 修改运费模板  todo:路径上的shopId与Token中解析出来的不符 这应该是网关做的，暂时测试不过
      * @throws Exception
      */
     @Test
@@ -163,7 +163,7 @@ public class PublicFreightControllerTest {
     }
 
     /**
-     * 修改件数运费模板 路径上的shopId与Token中解析出来的不符 网关负责的
+     * 修改件数运费模板 todo:路径上的shopId与Token中解析出来的不符 网关负责的
      * @throws Exception
      */
     @Test

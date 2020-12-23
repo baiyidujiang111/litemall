@@ -123,6 +123,13 @@ public class PaymentOrderByShopController {
         /* 先根据aftersalfeId查出shopId */
         /* 与传入的shopId一致才可放行 */
 
+        ReturnObject userId = iAftersaleService.findUserIdbyAftersaleId(aftersaleId);
+        if(userId.getData()==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
+
         ReturnObject returnObject = paymentService.getPaymentsByAftersaleId(aftersaleId);
         logger.info(JacksonUtil.toJson(returnObject));
         if (returnObject.getCode() == ResponseCode.OK)

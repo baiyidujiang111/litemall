@@ -64,9 +64,20 @@ public class PaymentAftersaleController {
     })
     @GetMapping("{id}/payments")
     @Audit
-    public Object getAftersaleByAftersaleId(@PathVariable("id")Long aftersaleId)
+    public Object getPaymentByAftersaleId(@PathVariable("id")Long aftersaleId,@LoginUser Long userid)
     {
         /*先校验一下该aftersaleId是不是本用户自己的*/
+        Long checkedUserId = iAftersaleService.findUserIdbyAftersaleId(aftersaleId).getData();
+        if(checkedUserId==null)
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_NOTEXIST);
+            return Common.decorateReturnObject(returnObject);
+        }
+        if(!userid.equals(checkedUserId))
+        {
+            ReturnObject returnObject = new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE);
+            return Common.decorateReturnObject(returnObject);
+        }
         /* 若正常，接着处理 */
         ReturnObject returnObject = paymentService.getPaymentsByAftersaleId(aftersaleId);
         if(returnObject.getCode()==ResponseCode.OK)
