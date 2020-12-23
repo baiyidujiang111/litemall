@@ -1,6 +1,7 @@
 package com.example.freight.controller;
 
 import cn.edu.xmu.ooad.annotation.Audit;
+import cn.edu.xmu.ooad.annotation.Depart;
 import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.model.VoObject;
 import cn.edu.xmu.ooad.util.Common;
@@ -75,7 +76,11 @@ public class FreightController {
     @Audit
     @PostMapping("shops/{shopId}/freightmodels/{id}/default")
     @ResponseBody
-    public Object setDefaultFreightModel(@PathVariable Long shopId, @PathVariable Long id,HttpServletResponse httpServletResponse) {
+    public Object setDefaultFreightModel(@Depart Long jwtShopId,@PathVariable Long shopId, @PathVariable Long id,HttpServletResponse httpServletResponse) {
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
         logger.debug("setDefaultFreightModel shopid = " + shopId + " id = " + id);
         ReturnObject returnObject = freightService.setDefaultFreightModel(shopId, id);
         if (returnObject.getCode() == ResponseCode.OK) {
@@ -169,8 +174,12 @@ public class FreightController {
 
     @Audit
     @PutMapping("/shops/{shopId}/freightmodels/{id}")
-    public Object modifyFreightModel(@PathVariable Long shopId,@PathVariable Long id,@RequestBody FreightModelInfoVo vo,HttpServletResponse httpServletResponse)
+    public Object modifyFreightModel(@Depart Long jwtShopId,@PathVariable Long shopId,@PathVariable Long id,@RequestBody FreightModelInfoVo vo,HttpServletResponse httpServletResponse)
     {
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
         ReturnObject returnObject = freightService.modifyFreightModel(shopId,id,vo);
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
@@ -401,8 +410,13 @@ public class FreightController {
     @Audit
     @PutMapping("shops/{shopId}/pieceItems/{id}")
     @ResponseBody
-    public Object putPieceItems(@PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody PieceFreightModelInfoVo pieceFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
+    public Object putPieceItems(@Depart Long jwtShopId, @PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody PieceFreightModelInfoVo pieceFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
     {
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
+
         logger.debug("putPieceItems shopId:" + shopId + " id = " + id);
         if (result.hasErrors())
         {
@@ -482,8 +496,14 @@ public class FreightController {
     @Audit
     @PutMapping("shops/{shopId}/weightItems/{id}")
     @ResponseBody
-    public Object putWeightItems(@PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody WeightFreightModelInfoVo weightFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
+    public Object putWeightItems(@Depart Long jwtShopId,@PathVariable Long shopId, @PathVariable Long id, @Validated @RequestBody WeightFreightModelInfoVo weightFreightModelInfoVo, BindingResult result, HttpServletResponse httpServletResponse)
     {
+        logger.info("jwtShopId shopId "+jwtShopId+" "+shopId);
+        if(!shopId.equals(jwtShopId))
+        {
+            return Common.decorateReturnObject(new ReturnObject(ResponseCode.RESOURCE_ID_OUTSCOPE));
+        }
+
         logger.debug("putWeightItems shopId:" + shopId + " id = " + id);
         if (result.hasErrors())
         {
