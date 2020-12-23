@@ -2,6 +2,35 @@
 pagehelper:
   helper-dialect: mysql
 
+dubbo:
+  application:
+    name: dubbo-goods
+  scan:
+    base-packages: cn.edu.xmu.goods.service
+  registry:
+    address: nacos://localhost:8848 #nacos://47.115.162.144:8847
+  protocol:
+    name: dubbo
+    port: 28091
+
+#dubbo:
+#  # 配置服务信息
+#  application:
+#    name: dubbo-goods
+#    # 禁用QOS同一台机器可能会有端口冲突现象
+#    qos-enable: false
+#    qos-accept-foreign-ip: false
+#  # 配置注册中心
+#  registry:
+#    address: nacos://47.115.162.144:8847
+#  # 设置协议-协议由提供方指定消费方被动接受
+#  protocol:
+#    name: dubbo
+#    port: 20880
+#  # 设置超时时间
+#  consumer:
+#    timeout: 4000
+#    check: true
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

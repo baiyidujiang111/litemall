@@ -287,6 +287,8 @@ public class PublicFreightControllerTest {
 
     /**
      * 计算运费1
+     *
+     *
      * todo:需要到商品模块才能拿信息
      * @throws Exception
      */
@@ -295,7 +297,7 @@ public class PublicFreightControllerTest {
     public void calculateFreight1() throws Exception {
         String token = new JwtHelper().createToken(100L, 100l, 100);
         String json = "[{\"count\":6,\"skuId\":10000},{\"count\":2,\"skuId\":10001},{\"count\":1,\"skuId\":10002}]";
-        byte[] responseString = mallClient.post().uri("/region/2/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/2/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isCreated()
@@ -317,7 +319,7 @@ public class PublicFreightControllerTest {
     public void calculateFreight3() throws Exception {
         String token = new JwtHelper().createToken(100L, 100l, 100);
         String json = "[{\"count\":1,\"skuId\":10000},{\"count\":1,\"skuId\":10001},{\"count\":1,\"skuId\":10002}]";
-        byte[] responseString = mallClient.post().uri("/region/20001/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/20001/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isOk()
@@ -338,7 +340,7 @@ public class PublicFreightControllerTest {
 
         String token = null;
         String json = "[{\"count\":1,\"skuId\":10000},{\"count\":1,\"skuId\":10001},{\"count\":1,\"skuId\":10002}]";
-        byte[] responseString = mallClient.post().uri("/region/2/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/2/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isCreated()
@@ -483,7 +485,7 @@ public class PublicFreightControllerTest {
     public void calculateFreight() throws Exception {
         String token = new JwtHelper().createToken(200L, 100l, 50);
         String json = "[{\"count\":1,\"skuId\":1275}]";
-        byte[] responseString = mallClient.post().uri("/region/201/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/201/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isCreated()
@@ -505,7 +507,7 @@ public class PublicFreightControllerTest {
 
         String token = new JwtHelper().createToken(200L, 100l, 50);
         String json = "[{\"count\":1,\"skuId\":1275}]";
-        byte[] responseString = mallClient.post().uri("/region/54101/price").header("authorization", token)
+        byte[] responseString = mallClient.post().uri("/freight/region/54101/price").header("authorization", token)
                 .bodyValue(json)
                 .exchange()
                 .expectStatus().isOk()

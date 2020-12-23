@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -284,8 +285,15 @@ public class FreightModelDao {
 
     public FreightModelBo getDefaultFreightModel()
     {
-        QueryWrapper<FreightModelPo> freightModelPoQueryWrapper = new QueryWrapper<FreightModelPo>().eq("defaultModel",true);
-        return new FreightModelBo(freightModelMapper.selectOne(freightModelPoQueryWrapper));
+        QueryWrapper<FreightModelPo> freightModelPoQueryWrapper = new QueryWrapper<FreightModelPo>().eq("default_model",1);
+        ArrayList<FreightModelPo> freightModelPos;
+        freightModelPos = (ArrayList<FreightModelPo>) freightModelMapper.selectList(freightModelPoQueryWrapper);
+        if(freightModelPos!=null)
+        {
+            return new FreightModelBo(freightModelPos.get(0));
+        }else {
+            return null;
+        }
     }
 
     public FreightModelDetail getFreightOrderDetail(Long rid,int type,Long freightModelId)
@@ -293,12 +301,12 @@ public class FreightModelDao {
         FreightModelDetail freightModelDetail = null;
         if(type==0)
         {
-            QueryWrapper queryWrapper = new QueryWrapper<WeightFreightModelPo>().eq("regionId",rid).eq("freightModelId",freightModelId);
+            QueryWrapper queryWrapper = new QueryWrapper<WeightFreightModelPo>().eq("region_id",rid).eq("freight_model_id",freightModelId);
             WeightFreightModelBo weightFreightModelBo = new WeightFreightModelBo(weightFreightModelMapper.selectOne(queryWrapper)) ;
             freightModelDetail =  weightFreightModelBo;
         }else if(type==1)
         {
-            QueryWrapper queryWrapper = new QueryWrapper<PieceFreightModelPo>().eq("regionId",rid).eq("freightModelId",freightModelId);
+            QueryWrapper queryWrapper = new QueryWrapper<PieceFreightModelPo>().eq("region_id",rid).eq("freight_model_id",freightModelId);
             PieceFreightModelBo pieceFreightModelBo = new PieceFreightModelBo(pieceFreightModelMapper.selectOne(queryWrapper)) ;
             freightModelDetail =  pieceFreightModelBo;
         }
@@ -329,4 +337,22 @@ public class FreightModelDao {
         }
         return returnObject;
     }
+
+    /**
+    * @Description:
+    * @Param: [freightId]
+    * @return: com.example.freight.model.bo.FreightModelBo
+    * @Author: alex101
+    * @Date: 2020/12/23
+    */
+    public FreightModelBo getFreightModelById(Long freightId)
+    {
+        FreightModelPo freightModelPo = freightModelMapper.selectById(freightId);
+        if(freightModelPo==null)
+        {
+            return null;
+        }
+        return new FreightModelBo(freightModelPo);
+    }
+
 }

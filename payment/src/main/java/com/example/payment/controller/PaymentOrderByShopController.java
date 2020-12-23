@@ -1,5 +1,6 @@
 package com.example.payment.controller;
 
+import cn.edu.xmu.goods.client.IGoodsService;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.util.Common;
@@ -31,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "payment/shops",produces = "application/json;charset=UTF-8")
+@RequestMapping(value = "/shops",produces = "application/json;charset=UTF-8")
 public class PaymentOrderByShopController {
 
     @Autowired
@@ -46,6 +47,7 @@ public class PaymentOrderByShopController {
 
     @DubboReference(registry = "other")
     IAftersaleService iAftersaleService;
+
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentOrderByShopController.class);
 

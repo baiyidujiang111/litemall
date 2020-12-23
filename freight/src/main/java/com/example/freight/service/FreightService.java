@@ -5,6 +5,7 @@ import cn.edu.xmu.ooad.util.ReturnObject;
 import com.example.freight.dao.FreightModelDao;
 import com.example.freight.dao.PieceFreightDao;
 import com.example.freight.model.bo.FreightModelBo;
+import com.example.freight.model.po.FreightModelPo;
 import com.example.freight.model.vo.*;
 import cn.edu.xmu.ooad.model.VoObject;
 import com.example.freight.dao.WeightFreightDao;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.naming.Name;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,6 +59,7 @@ public class FreightService {
     */
     public ReturnObject getFreightModelSummary(Long shopId,Long id)
     {
+
         return freightModelDao.getFreightModelSummary(shopId,id);
     }
 
@@ -216,9 +219,15 @@ public class FreightService {
         return weightFreightDao.getWeightItem(shopId,id);
     }
 
-    public ReturnObject getFreight(List<FreightModelBo> freightModelBoList, List<Integer> skuWeight, List<ItemVo> items, Long rid)
+    public ReturnObject getFreight(List<Long> freightIdList, List<Long> skuWeight, List<ItemVo> items, Long rid)
     {
 
+        List<FreightModelBo> freightModelBoList = new ArrayList<FreightModelBo>();
+        for(Long freightId:freightIdList)
+        {
+            freightModelBoList.add(freightModelDao.getFreightModelById(freightId));
+        }
+        List<ItemVo> noDefaultFreight = new ArrayList<ItemVo>();
         int len = skuWeight.size();
         Boolean existDefaultModel=false;
         FreightModelBo freightModelBo = freightModelDao.getDefaultFreightModel();

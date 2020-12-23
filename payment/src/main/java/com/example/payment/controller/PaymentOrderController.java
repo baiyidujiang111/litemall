@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/payment/orders",produces = "application/json;charset=UTF-8")
+@RequestMapping(value = "/orders",produces = "application/json;charset=UTF-8")
 public class PaymentOrderController {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentOrderController.class);

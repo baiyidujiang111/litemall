@@ -10,13 +10,15 @@ dubbo:
   # 配置注册中心
   registries:
     order:
-      address: nacos://localhost:8848
+      address: nacos://172.16.2.151:8848
     other:
       address: nacos://172.16.1.156:8848
+    goods:
+      address: nacos://47.115.162.144:8847
   # 设置协议-协议由提供方指定消费方被动接受
   protocol:
     name: dubbo
-    port: 20880
+    port: 28091 #20880
   # 设置超时时间
   consumer:
     timeout: 4000
@@ -27,9 +29,9 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     initialization-mode: always
     name: oomall_order
-    url: jdbc:mysql://localhost:3306/oomall_order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    url: jdbc:mysql://172.16.2.151:3306/oomall_order?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
     username: root
-    password: alex20000211 #ooad109mysql #alex20000211 #ooad109mysql #alex20000211 #ooad109mysql
+    password: ooad109mysql #ooad109mysql #alex20000211 #ooad109mysql #alex20000211 #ooad109mysql
     #schema: classpath:order-schema.sql
     #data: classpath:order-data.sql
     druid:
@@ -51,7 +53,7 @@ spring:
     sql-script-encoding: UTF-8
 
 public-test:
-  managementgate: 47.110.147.122:18089 #localhost:8089 #47.110.147.122:18089
-  mallgate: 47.110.147.122:18089 #localhost:8089 #47.110.147.122:18089
+  managementgate: 47.110.147.122:18088 #47.110.147.122:18089 #localhost:8089 #47.110.147.122:18089
+  mallgate: 47.110.147.122:18088 #47.110.147.122:18089 #localhost:8089 #47.110.147.122:18089
 server:
   port: 8089

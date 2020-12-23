@@ -23,6 +23,7 @@
         <module>core</module>
         <module>order_client</module>
         <module>other-client</module>
+        <module>goods-client</module>
     </modules>
     <properties>
         <java.version>11</java.version>

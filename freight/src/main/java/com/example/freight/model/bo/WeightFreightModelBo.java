@@ -57,7 +57,7 @@ public class WeightFreightModelBo implements VoObject,FreightModelDetail {
     }
 
     @Override
-    public Long getFreight(int weight,Long count)
+    public Long getFreight(Long weight,Long count)
     {
         Long weightSum = weight*count;
         Long freight = firstWeightFreight;
