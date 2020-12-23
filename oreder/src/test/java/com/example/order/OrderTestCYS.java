@@ -755,7 +755,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/1")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/1")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -779,7 +779,7 @@ public class OrderTestCYS {
                 "}";
         String token = new JwtHelper().createToken(1L, 123456L, 100);
 
-        byte[] responseString = manageClient.put().uri("/shops/406/orders/48052/deliver")
+        byte[] responseString = manageClient.put().uri("/order/shops/406/orders/48052/deliver")
                 .header("authorization", token)
                 .bodyValue(orderJson)
                 .exchange()
@@ -789,7 +789,7 @@ public class OrderTestCYS {
                 .returnResult()
                 .getResponseBodyContent();
 
-        byte[] confirmString = manageClient.get().uri("/shops/406/orders/48052")
+        byte[] confirmString = manageClient.get().uri("/order/shops/406/orders/48052")
                 .header("authorization", token)
                 .exchange()
                 .expectStatus().isOk()
