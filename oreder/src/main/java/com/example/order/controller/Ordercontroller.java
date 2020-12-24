@@ -172,7 +172,9 @@ public class Ordercontroller {
         ReturnObject returnObject;
         returnObject=orderService.PostOrder(newOrder);
 
+        //httpServletResponse.setStatus(HttpStatus.CREATED.value());
         if (returnObject.getCode() == ResponseCode.OK) {
+            //httpServletResponse.setStatus(HttpStatus.CREATED.value());
             return Common.getRetObject(returnObject);
         } else {
             return Common.decorateReturnObject(returnObject);
@@ -190,7 +192,8 @@ public class Ordercontroller {
     @Audit
     @GetMapping("/orders/{id}")
     @ResponseBody
-    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") Long id,HttpServletResponse httpServletResponse)
+    public Object GetOrderDetail(@LoginUser Long authorization,
+                                 @PathVariable("id") Long id,HttpServletResponse httpServletResponse)
     {
         logger.debug("User_id:"+authorization+" Order_id:"+id);
         ReturnObject returnObject=orderService.GetOrderDetail(authorization,id);
@@ -332,7 +335,7 @@ public class Ordercontroller {
     @PostMapping("/orders/{id}/groupon-normal")
     public Object PostGroupon_Normal(@LoginUser Long use_id,@PathVariable Long id,HttpServletResponse httpServletResponse)
     {
-        ReturnObject returnObject=orderService.PostGroupon_Normal(use_id,id);
+        ReturnObject returnObject=orderService.PostGroupon_Normal(use_id,id,httpServletResponse);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);

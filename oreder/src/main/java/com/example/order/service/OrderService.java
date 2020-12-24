@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import javax.servlet.http.HttpServletResponse;
+
 /***
  * @author yansong chen
  * @time 2020-12-10 16:15
@@ -69,9 +71,9 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject PostGroupon_Normal(Long user_id,Long id)
+    public ReturnObject PostGroupon_Normal(Long user_id, Long id, HttpServletResponse httpServletResponse)
     {
-        return orderModeldao.PostGroupon_Normal(user_id,id);
+        return orderModeldao.PostGroupon_Normal(user_id,id,httpServletResponse);
     }
 
     @Transactional

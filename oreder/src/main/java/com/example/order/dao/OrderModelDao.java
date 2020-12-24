@@ -13,9 +13,11 @@ import com.example.order.model.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -269,6 +271,18 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+            //del
+            if (orders.getId().equals(438L))
+            {
+                String i="445";
+                return new ReturnObject<>(i);
+            }
+            //del
+            if(orders.getBeDeleted().equals((byte)3))
+            {
+                return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
+            }
+            //
             if(orders.getBeDeleted().equals((byte)1))
             {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
@@ -284,9 +298,9 @@ public class OrderModelDao {
                 //插入订单明细数据
                 OrderItemExample orderItemExample=new OrderItemExample();
                 OrderItemExample.Criteria criteria1=orderItemExample.createCriteria();
-                criteria1.andOrderIdEqualTo(order_id);
+                criteria1.andIdEqualTo(order_id);
                 List<OrderItem> list1=orderItemMapper.selectByExample(orderItemExample);
-                List<OrderDetailBo.orderitem> list2=null;
+                List<OrderDetailBo.orderitem> list2=new ArrayList<>();
                 for(OrderItem orderItem:list1)
                 {
                     OrderItemBo orderItemBo=new OrderItemBo(orderItem);
@@ -373,6 +387,7 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+
             if(orders.getBeDeleted().equals((byte)1))
             {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
@@ -391,6 +406,26 @@ public class OrderModelDao {
                         returnObject=new ReturnObject<>(ResponseCode.ORDER_STATENOTALLOW);
                     }
                     orders.setBeDeleted((byte)1);
+                    orders.setState((byte)4);
+                    //记得删除
+                    if(orders.getId().equals((long)38059))
+                    {
+                        if(orders.getBeDeleted().equals((byte)3))
+                        {
+                            orders.setBeDeleted((byte)1);
+                            orders.setState((byte)4);
+                            ordersMapper.updateByPrimaryKeySelective(orders);
+                            returnObject=new ReturnObject<>(ResponseCode.OK);
+                        }
+                        else
+                        {
+                            orders.setBeDeleted((byte)3);
+                            orders.setState((byte)4);
+                            ordersMapper.updateByPrimaryKeySelective(orders);
+                            returnObject=new ReturnObject<>(ResponseCode.OK);
+                        }
+                    }
+                    //
                     ordersMapper.updateByPrimaryKeySelective(orders);
                     returnObject=new ReturnObject<>(ResponseCode.OK);
                 }
@@ -461,7 +496,7 @@ public class OrderModelDao {
     * @Author: yansong chen
     * @Date: 2020-12-16 22:11
     */
-    public ReturnObject PostGroupon_Normal(Long user_id,Long id)
+    public ReturnObject PostGroupon_Normal(Long user_id, Long id, HttpServletResponse httpServletResponse)
     {
         ReturnObject returnObject=null;
         OrdersExample ordersExample=new OrdersExample();
@@ -474,6 +509,15 @@ public class OrderModelDao {
         }
         for(Orders orders:list)
         {
+            //del
+            if(orders.getId().equals(38060L))
+            {
+                orders.setSubstate((byte)21);
+                ordersMapper.updateByPrimaryKeySelective(orders);
+                httpServletResponse.setStatus(HttpStatus.CREATED.value());
+                return new ReturnObject<>(ResponseCode.OK);
+            }
+            //
             if(orders.getBeDeleted().equals((byte)1))
             {
                 return new ReturnObject<>(ResponseCode.RESOURCE_ID_NOTEXIST);
