@@ -1,10 +1,12 @@
 package com.example.order.controller;
 
+import cn.edu.xmu.goods.client.IShopService;
 import cn.edu.xmu.ooad.annotation.Audit;
 import cn.edu.xmu.ooad.annotation.LoginUser;
 import cn.edu.xmu.ooad.util.Common;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.oomall.other.service.ICustomerService;
 import com.example.order.model.bo.NewOrder;
 import com.example.order.model.vo.NewOrderVO;
 import com.example.order.model.vo.OrderFreightSn;
@@ -12,6 +14,7 @@ import com.example.order.model.vo.OrderMessage;
 import com.example.order.model.vo.modifyOrder;
 import com.example.order.service.OrderService;
 import io.swagger.annotations.*;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,11 @@ public class Ordercontroller {
     @Autowired
     OrderService orderService;
 
+    @DubboReference(version = "0.0.1-SNAPSHOT")
+    IShopService iShopService;
+
+    @DubboReference(version = "0.0.1-SNAPSHOT")
+    ICustomerService iCustomerService;
 /*    @Autowired
     private HttpServletResponse httpServletResponse;*/
     /**
@@ -190,10 +198,12 @@ public class Ordercontroller {
     @Audit
     @GetMapping("/orders/{id}")
     @ResponseBody
-    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") Long id,HttpServletResponse httpServletResponse)
+    //加入商品模块的dubbo服务
+    public Object GetOrderDetail(@LoginUser Long authorization, @PathVariable("id") Long id,
+                                 HttpServletResponse httpServletResponse)
     {
         logger.debug("User_id:"+authorization+" Order_id:"+id);
-        ReturnObject returnObject=orderService.GetOrderDetail(authorization,id);
+        ReturnObject returnObject=orderService.GetOrderDetail(authorization,id,iShopService,iCustomerService);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);
@@ -485,7 +495,7 @@ public class Ordercontroller {
                                      @PathVariable Long id,
                                      HttpServletResponse httpServletResponse)
     {
-        ReturnObject returnObject=orderService.GetShopOrderDetail(authorization,shopId,id);
+        ReturnObject returnObject=orderService.GetShopOrderDetail(authorization,shopId,id,iShopService,iCustomerService);
 
         if (returnObject.getCode() == ResponseCode.OK) {
             return Common.getRetObject(returnObject);

@@ -1,7 +1,11 @@
 package com.example.order.dao;
 
+import cn.edu.xmu.goods.client.IShopService;
+import cn.edu.xmu.goods.client.dubbo.ShopDTO;
 import cn.edu.xmu.ooad.util.ResponseCode;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.oomall.other.model.CustomerDTO;
+import cn.edu.xmu.oomall.other.service.ICustomerService;
 import com.example.order.mapper.OrderItemMapper;
 import com.example.order.mapper.OrdersMapper;
 import com.example.order.model.bo.*;
@@ -255,7 +259,7 @@ public class OrderModelDao {
     * @Author: yansong chen
     * @Date: 2020-12-17 1:10
     */
-    public ReturnObject GetOrderDetail(Long id,Long order_id)
+    public ReturnObject GetOrderDetail(Long id, Long order_id, IShopService iShopService, ICustomerService iCustomerService)
     {
         ReturnObject returnObject=null;
         OrdersExample ordersExample=new OrdersExample();
@@ -279,7 +283,18 @@ public class OrderModelDao {
                 orderDetailBo=new OrderDetailBo(orderBo);
 
                 //orderDetailBo.setShops(); //缺商店api
+                ShopDTO shopDTO=iShopService.getShopById(orders.getShopId());
+                orderDetailBo.getShops().setId(shopDTO.getId());
+                orderDetailBo.getShops().setState(shopDTO.getState());
+                orderDetailBo.getShops().setName(shopDTO.getName());
+                orderDetailBo.getShops().setGmtModified(shopDTO.getGmtModiTime().toString());
+                orderDetailBo.getShops().setGmtCreate(shopDTO.getGmtCreateTime().toString());
+
                 //orderDetailBo.setCustomers();//缺顾客信息api
+                ReturnObject<CustomerDTO> customerDTO=iCustomerService.findCustomerByUserId(orders.getCustomerId());
+                orderDetailBo.getCustomers().setId(orders.getCustomerId());
+                orderDetailBo.getCustomers().setName(customerDTO.getData().getName());
+                orderDetailBo.getCustomers().setUsername(customerDTO.getData().getUserName());
 
                 //插入订单明细数据
                 OrderItemExample orderItemExample=new OrderItemExample();
@@ -676,7 +691,7 @@ public class OrderModelDao {
     * @Author: yansong chen
     * @Date: 2020-12-23 15:27
     */
-    public ReturnObject GetShopOrderDetail(Long authorization,Long shopid,Long id)
+    public ReturnObject GetShopOrderDetail(Long authorization,Long shopid,Long id,IShopService iShopService, ICustomerService iCustomerService)
     {
         ReturnObject returnObject = null;
         OrdersExample example=new OrdersExample();
@@ -703,6 +718,19 @@ public class OrderModelDao {
 
                 //orderDetailBo.setShops();
                 //orderDetailBo.setCustomers();//缺顾客信息api
+                //orderDetailBo.setShops(); //缺商店api
+                ShopDTO shopDTO=iShopService.getShopById(orders.getShopId());
+                orderDetailBo.getShops().setId(shopDTO.getId());
+                orderDetailBo.getShops().setState(shopDTO.getState());
+                orderDetailBo.getShops().setName(shopDTO.getName());
+                orderDetailBo.getShops().setGmtModified(shopDTO.getGmtModiTime().toString());
+                orderDetailBo.getShops().setGmtCreate(shopDTO.getGmtCreateTime().toString());
+
+                //orderDetailBo.setCustomers();//缺顾客信息api
+                ReturnObject<CustomerDTO> customerDTO=iCustomerService.findCustomerByUserId(orders.getCustomerId());
+                orderDetailBo.getCustomers().setId(orders.getCustomerId());
+                orderDetailBo.getCustomers().setName(customerDTO.getData().getName());
+                orderDetailBo.getCustomers().setUsername(customerDTO.getData().getUserName());
 
                 //插入订单明细数据
                 OrderItemExample orderItemExample=new OrderItemExample();

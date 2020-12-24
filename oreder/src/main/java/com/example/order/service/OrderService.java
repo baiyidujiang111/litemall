@@ -1,6 +1,8 @@
 package com.example.order.service;
 
+import cn.edu.xmu.goods.client.IShopService;
 import cn.edu.xmu.ooad.util.ReturnObject;
+import cn.edu.xmu.oomall.other.service.ICustomerService;
 import com.example.order.dao.OrderModelDao;
 import com.example.order.model.bo.NewOrder;
 import com.example.order.model.vo.NewOrderVO;
@@ -51,9 +53,9 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject GetOrderDetail(Long id,Long order_id)
+    public ReturnObject GetOrderDetail(Long id, Long order_id, IShopService iShopService, ICustomerService iCustomerService)
     {
-        return orderModeldao.GetOrderDetail(id,order_id);
+        return orderModeldao.GetOrderDetail(id,order_id,iShopService,iCustomerService);
     }
 
     @Transactional
@@ -89,9 +91,9 @@ public class OrderService {
     }
 
     @Transactional
-    public ReturnObject GetShopOrderDetail(Long authorization,Long shopid,Long id)
+    public ReturnObject GetShopOrderDetail(Long authorization,Long shopid,Long id,IShopService iShopService, ICustomerService iCustomerService)
     {
-        return  orderModeldao.GetShopOrderDetail(authorization,shopid,id);
+        return  orderModeldao.GetShopOrderDetail(authorization,shopid,id,iShopService,iCustomerService);
     }
 
     @Transactional
